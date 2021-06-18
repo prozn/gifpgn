@@ -22,8 +22,8 @@ class CreateGifFromPGN:
         self._pieces = {}
         self._duration = duration
         self._reverse = reverse
-        self._ws_color = '#f0d9b5'
-        self._bs_color = '#b58863'
+        self._ws_color = '#f0d9b5' # setting the private property to not trigger the setter
+        self._bs_color = '#b58863' # setting the private property to not trigger the setter
         self.board_size = 480
         self.bar_size = 30
         self.graph_size = 81
@@ -41,7 +41,8 @@ class CreateGifFromPGN:
         self._board = self._game.board()
 
     @property
-    def board_size(self):
+    def board_size(self) -> int:
+        """(int) Size of the board in pixels. Defaults to 480."""
         return self._board_size
 
     @board_size.setter
@@ -51,7 +52,8 @@ class CreateGifFromPGN:
         self._create_square_images()
     
     @property
-    def bar_size(self):
+    def bar_size(self) -> int:
+        """(int) Width of the evaluation bar in pixels. Defaults to 30."""
         return self._bar_size
     
     @bar_size.setter
@@ -59,7 +61,8 @@ class CreateGifFromPGN:
         self._bar_size = bar_size
 
     @property
-    def graph_size(self):
+    def graph_size(self) -> int:
+        """(int) Height of the evaluation graph in pixels. Defaults to 81."""
         return self._graph_size
 
     @graph_size.setter
@@ -67,7 +70,8 @@ class CreateGifFromPGN:
         self._graph_size = graph_size
     
     @property
-    def ws_color(self):
+    def ws_color(self) -> str:
+        """(str) Color of the white squares. Defaults to '#f0d9b5'."""
         return self._ws_color
 
     @ws_color.setter
@@ -76,7 +80,8 @@ class CreateGifFromPGN:
         self._create_square_images(black=False)
     
     @property
-    def bs_color(self):
+    def bs_color(self) -> str:
+        """(str) Color of the black squares. Defaults to '#b58863'"""
         return self._bs_color
     
     @bs_color.setter
@@ -85,7 +90,8 @@ class CreateGifFromPGN:
         self._create_square_images(white=False)
 
     @property
-    def max_eval(self):
+    def max_eval(self) -> int:
+        """(int) Maximum position evaluation in centipawns. Defaults to 1000."""
         return self._max_eval
     
     @max_eval.setter
