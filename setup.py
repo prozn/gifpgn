@@ -5,7 +5,7 @@ HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.md").read_text()
 
 setup(name='gifpgn',
-      version='0.1.1',
+      version='0.1.2',
       description='Convert a PGN into a GIF with stockfish evaluation chart',
       long_description=README,
       long_description_content_type="text/markdown",
