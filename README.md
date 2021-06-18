@@ -26,6 +26,12 @@ eg. ``apt-get install stockfish``
 
 ``gif.enable_evaluation()``
 
+Stockfish evaluation is expensive and may take a large amount of time to complete.
+
+The default depth of 18 provides a reasonable trade-off of time versus accuracy. Reducing this number will significantly reduce processing time.
+
+Please see the `enable_evaluation` documentation below for configuation options for numbers of threads and memory usage.
+
 4. Generate the GIF:
 
 ``gif.generate(output_file_path)``
