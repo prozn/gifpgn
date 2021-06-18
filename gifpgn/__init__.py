@@ -1,0 +1,1 @@
+from .gifpgn import CreateGifFromPGN
