@@ -19,6 +19,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+.coverage
 
 # Installer logs
 pip-log.txt
