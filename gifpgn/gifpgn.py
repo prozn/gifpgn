@@ -154,11 +154,11 @@ class CreateGifFromPGN:
         """
         return square % 2 != floor(square/8) % 2
 
-    def _piece_string(self, piece: str) -> str:
+    def _piece_string(self, piece: object) -> str:
         """Returns the filename corresponding to a piece letter
 
-        Args:
-            piece (str): letter donoting a chess piece
+        Args:do
+            piece (object): python-chess piece object
 
         Returns:
             str: piece filename
