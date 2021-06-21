@@ -322,7 +322,7 @@ class CreateGifFromPGN:
         draw = ImageDraw.Draw(self._board_image)
         draw.rectangle([(self.board_size,0),(self.board_size+bar_width-1,self.board_size-1)],fill="white")
         if self._reverse:
-            draw.rectangle([(self.board_size,self.board_size-evalu),(self.board_size+bar_width-1,self.board_size-1)],fill="white")
+            draw.rectangle([(self.board_size,self.board_size-evalu),(self.board_size+bar_width-1,self.board_size-1)],fill="black")
         else:
             draw.rectangle([(self.board_size,0),(self.board_size+bar_width-1,evalu)],fill="black")
         font = ImageFont.truetype(BytesIO(pkgutil.get_data(__name__, "fonts/Carlito-Regular.ttf")), 10)
