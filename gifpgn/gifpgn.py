@@ -19,6 +19,7 @@ class CreateGifFromPGN:
     def __init__(self, pgn: str, reverse: bool=False, duration: float=0.5, pgn_file: bool=False):
         self._stockfish = None
         self._analysis = False
+        self._enable_arrows = False
         self._pieces = {}
         self._duration = duration
         self._reverse = reverse
