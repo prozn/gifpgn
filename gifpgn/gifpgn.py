@@ -49,6 +49,7 @@ class CreateGifFromPGN:
     def board_size(self, bsize):
         self._board_size = floor(bsize/8)*8
         self._sq_size = self._board_size // 8
+        self._pieces = {}
         self._create_square_images()
     
     @property
@@ -216,7 +217,7 @@ class CreateGifFromPGN:
         try:
             return self._pieces[piece_string]
         except KeyError:
-            self._pieces[piece_string] = Image.open(BytesIO(pkgutil.get_data(__name__, f"assets/{piece_string}.png")))
+            self._pieces[piece_string] = Image.open(BytesIO(pkgutil.get_data(__name__, f"assets/{piece_string}.png"))).resize((self._sq_size, self._sq_size)) 
             return self._pieces[piece_string]
     
     def _draw_evaluation(self):
