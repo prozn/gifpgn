@@ -3,7 +3,7 @@ import chess.pgn
 from io import StringIO, BytesIO
 from stockfish import Stockfish
 from PIL import Image, ImageDraw, ImageFont
-from math import floor
+from math import floor, atan2, sin, cos, sqrt
 import pkgutil
 
 class CreateGifFromPGN:
@@ -99,6 +99,15 @@ class CreateGifFromPGN:
     def max_eval(self, maximum):
         self._max_eval = maximum
 
+    @property
+    def enable_arrows(self) -> bool:
+        """(bool) Whether drawing of move arrows is enabled."""
+        return self._enable_arrows
+
+    @enable_arrows.setter
+    def enable_arrows(self, enable: bool):
+        self._enable_arrows = enable
+
     def _create_square_images(self, white: bool=True, black: bool=True):
         """Generates the square images for pasting onto the board
 
@@ -128,21 +137,28 @@ class CreateGifFromPGN:
             self._stockfish.set_depth(depth)
             self._analysis = True
 
-    def _get_square_position(self, square: int) -> tuple:
+    def _get_square_position(self, square: int, center: bool=False) -> tuple:
         """Returns the coordinates of a given square
 
         Args:
             square (int): Square number in range 0 (a1) to 63 (h8)
+            centre (bool, optional): Whether coordinates are top left corner or centre. Defaults to False.
 
         Returns:
-            (int, int): Tuple with x,y coordinate of the top left corner of the square
+            (int, int): Tuple with x,y coordinate of the top left corner or center of the square
         """
         row = floor(square/8)
         column = square-(row*8)
         if self._reverse:
-            return ((7-column)*self._sq_size, row*self._sq_size)
+            if center:
+                return ((7-column)*self._sq_size+(self._sq_size/2), row*self._sq_size+(self._sq_size/2))
+            else:
+                return ((7-column)*self._sq_size, row*self._sq_size)
         else:
-            return (column*self._sq_size, (7-row)*self._sq_size)
+            if center:
+                return (column*self._sq_size+(self._sq_size/2), (7-row)*self._sq_size+(self._sq_size/2))
+            else:
+                return (column*self._sq_size, (7-row)*self._sq_size)
 
     def _get_square_color(self, square: int) -> bool:
         """Returns the color of a given square
@@ -219,6 +235,55 @@ class CreateGifFromPGN:
         except KeyError:
             self._pieces[piece_string] = Image.open(BytesIO(pkgutil.get_data(__name__, f"assets/{piece_string}.png"))).resize((self._sq_size, self._sq_size)) 
             return self._pieces[piece_string]
+
+    def _draw_arrow(self, square1: int, square2: int, color: str='green'):
+        """Draw an arrow between two squares
+
+        Args:
+            square1 (int): Index of square from
+            square2 (int): Index of square to
+            color (str, optional): Arrow color: green, blue or red. Defaults to 'green'.
+        """
+        def rotate_around_point(point, radians, origin=(0, 0)):
+            x, y = point
+            ox, oy = origin
+            qx = ox + cos(radians) * (x - ox) + sin(radians) * (y - oy)
+            qy = oy + -sin(radians) * (x - ox) + cos(radians) * (y - oy)
+            return qx, qy
+
+        def shorten_line(c1, c2, pix):
+            dx = c2[0] - c1[0]
+            dy = c2[1] - c1[1]
+            l = sqrt(dx*dx+dy*dy)
+            if l > 0:
+                dx /= l
+                dy /= l
+            dx *= l-pix
+            dy *= l-pix
+            return (c1,(c1[0]+dx, c1[1]+dy))
+
+        arrow_mask = Image.new('RGBA', self._board_image.size)
+        arrow = {
+            'green': (0, 255, 0, 100),
+            'blue':  (0, 0, 255, 100),
+            'red':   (255, 0, 0, 100)
+        }
+        from_crd = self._get_square_position(square1, center=True)
+        to_crd = self._get_square_position(square2, center=True)
+        draw = ImageDraw.Draw(arrow_mask)
+        # draw arrow line
+        draw.line(shorten_line(from_crd, to_crd, self._sq_size/2), fill=arrow[color], width=floor(self._sq_size/4))
+        
+        # draw arrow head
+        x0, y0 = from_crd
+        x1, y1 = to_crd
+        line_degrees = -atan2(y1-y0, x1-x0)
+        c1 = to_crd
+        c2 = rotate_around_point((x1-self._sq_size/2, y1-self._sq_size/3), line_degrees, c1)
+        c3 = rotate_around_point((x1-self._sq_size/2, y1+self._sq_size/3), line_degrees, c1)
+        draw.polygon([c1, c2, c3], fill=arrow[color])
+        
+        self._board_image = Image.alpha_composite(self._board_image, arrow_mask)
     
     def _draw_evaluation(self):
         bar_width = self.bar_size
@@ -335,7 +400,14 @@ class CreateGifFromPGN:
             prev = [self._board.piece_at(sq) for sq in chess.SQUARES]
             self._board.push(move)
             changed = [sq for sq in chess.SQUARES if self._board.piece_at(sq) != prev[sq]]
-            self._draw_changes(changed)
+            if self.enable_arrows:
+                self._draw_board()
+                self._draw_arrow(move.from_square, move.to_square, color='blue')
+                if self._board.is_check():
+                    for sq in self._board.checkers():
+                        self._draw_arrow(sq, self._board.king(self._board.turn), color='red')
+            else:
+                self._draw_changes(changed)
             frames.append(self._board_image.copy())
 
         if self._analysis:

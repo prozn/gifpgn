@@ -55,6 +55,7 @@ class  CreateGifFromPGN()
 - `ws_color` _str_ - Color of the white squares. Defaults to "#f0d9b5".
 - `bs_color` _str_ - Color of the black squares. Defaults to "#b58863".
 - `max_eval` _int_ - Maximum position evaluation in centipawns. Defaults to 1000.
+- `enable_arrows` _bool_ - Enable move arrows. Defaults to [False].
 
 #### enable\_evaluation
 ```python
