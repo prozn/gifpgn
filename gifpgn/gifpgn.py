@@ -342,7 +342,11 @@ class CreateGifFromPGN:
                     draw.polygon([zprev,points[move_num-1],zinter],fill="#514f4c" if self._eval_history[move_num-1] < 0 else "#7f7e7c")
                     draw.polygon([zinter,points[move_num],znew],fill="#514f4c" if self._eval_history[move_num] < 0 else "#7f7e7c")
                 else:
-                    draw.polygon([zprev,points[move_num-1],points[move_num],znew],fill="#514f4c" if self._eval_history[move_num] < 0 else "#7f7e7c")
+                    if self._eval_history[move_num] == 0:
+                        fill_color = "#514f4c" if self._eval_history[move_num-1] < 0 else "#7f7e7c"
+                    else:
+                        fill_color = "#514f4c" if self._eval_history[move_num] < 0 else "#7f7e7c"
+                    draw.polygon([zprev,points[move_num-1],points[move_num],znew],fill=fill_color)
         draw.line(points,fill='white',width=1)
         draw.line([(0,self.graph_size/2),(self.board_size+self.bar_size,self.graph_size/2)],fill="grey",width=1)
         return graph_image
