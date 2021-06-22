@@ -1,5 +1,21 @@
 # gifpgn
+
+![PyPI](https://img.shields.io/pypi/v/gifpgn?color=blue)
+[![Downloads](https://pepy.tech/badge/gifpgn)](https://pepy.tech/project/gifpgn)
+![GitHub commits since latest release (by date)](https://img.shields.io/github/commits-since/prozn/gifpgn/latest)
+[![Coverage Status](https://coveralls.io/repos/github/prozn/gifpgn/badge.svg)](https://coveralls.io/github/prozn/gifpgn)
+
 Generate a GIF of a chess game from a PGN with optional stockfish analysis chart.
+
+## Demo
+Stockfish analysis and move arrows:
+
+![](https://i.imgur.com/dXqrIIY.gif)
+
+Board only, small:
+
+![](https://i.imgur.com/vO3eYH7.gif)
+
 ## Installation
  ``pip install gifpgn``
 
@@ -32,7 +48,11 @@ The default depth of 18 provides a reasonable trade-off of time versus accuracy.
 
 Please see the `enable_evaluation` documentation below for configuation options for numbers of threads and memory usage.
 
-4. Generate the GIF:
+4. Optionally enable move arrows:
+
+``gif.enable_arrows = True``
+
+5. Generate the GIF:
 
 ``gif.generate(output_file_path)``
 
