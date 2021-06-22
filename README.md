@@ -4,6 +4,7 @@
 [![Downloads](https://pepy.tech/badge/gifpgn)](https://pepy.tech/project/gifpgn)
 [![GitHub commits since latest release (by date)](https://img.shields.io/github/commits-since/prozn/gifpgn/latest)](https://github.com/prozn/gifpgn/releases/latest)
 [![Coverage Status](https://coveralls.io/repos/github/prozn/gifpgn/badge.svg)](https://coveralls.io/github/prozn/gifpgn)
+[![Requirements Status](https://requires.io/github/prozn/gifpgn/requirements.svg?branch=master)](https://requires.io/github/prozn/gifpgn/requirements/?branch=master)
 
 Generate a GIF of a chess game from a PGN with optional stockfish analysis chart.
 
