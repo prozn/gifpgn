@@ -14,7 +14,7 @@ setup(name='gifpgn',
       license='GPLv3+',
       packages=['gifpgn'],
       python_requires='>=3.7',
-      install_requires=['pillow','stockfish','chess'],
+      install_requires=['pillow>=8.2.0','stockfish>=3.17.0','chess>=1.6.1'],
       package_data = {
             'gifpgn': ['assets/*.png','fonts/*.ttf'],
       })
