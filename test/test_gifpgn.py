@@ -3,13 +3,16 @@ from unittest.mock import patch
 from gifpgn import CreateGifFromPGN
 import pkgutil
 import chess
+from math import floor
+from random import randint
+from io import BytesIO
+from PIL import Image
 
 class fakeStockfish:
-    def __init__(self, path, parameters={}, fake_eval=0):
-        self._eval = {
-            'type': 'cp',
-            'value': fake_eval
-        }
+    def __init__(self, path, parameters={}, fake_eval={'type': 'cp', 'value': 0}, rand_eval=False):
+        self._eval = fake_eval
+        self._rand_eval = rand_eval
+        self._eval_num = 0
     
     def set_depth(self, depth):
         return True
@@ -18,7 +21,24 @@ class fakeStockfish:
         return True
     
     def get_evaluation(self):
-        return self._eval
+        if self._rand_eval:
+            first_few = [40,100,500,-800,0,-40,1500]
+            try:
+                val = first_few[self._eval_num]
+            except IndexError:
+                val = randint(-1000,1000)
+            self._eval_num += 1
+            return {'type': 'cp', 'value': val}
+        else:
+            return self._eval
+
+class fakeBoard(chess.Board):
+    def outcome(self):
+        return fakeOutcome(False)
+
+class fakeOutcome:
+    def __init__(self, outcome=False):
+        self.winner = outcome
 
 class TestGIFPGN(unittest.TestCase):
     def get_test_pgn(self):
@@ -93,11 +113,30 @@ class TestGIFPGN(unittest.TestCase):
         gif = CreateGifFromPGN(pkgutil.get_data(__name__, "test.pgn").decode('utf-8'))
         gif.max_eval = 500
         self.assertEqual(gif.max_eval, 500)
-        gif._stockfish = fakeStockfish('fake/path', fake_eval=-1200)
+        gif._stockfish = fakeStockfish('fake/path', fake_eval={'type': 'cp', 'value': -1200})
         gif._eval_history = list()
         gif._draw_board()
         gif._draw_evaluation()
         self.assertEqual(gif._eval_history[-1], -500)
+
+    def test_draw_evaluation(self):
+        gif = CreateGifFromPGN(pkgutil.get_data(__name__, "test.pgn").decode('utf-8'))
+        gif._stockfish = fakeStockfish('fake/path', fake_eval={'type': 'mate', 'value': -3})
+        gif._analysis = True
+        gif._eval_history = list()
+        gif._draw_board()
+        gif._draw_evaluation()
+        self.assertEqual(gif._board_image.getpixel((gif.board_size,1)),(0,0,0,255))
+        self.assertEqual(gif._board_image.getpixel((gif.board_size,gif.board_size-1)),(0,0,0,255))
+        gif._stockfish._eval =  {'type': 'mate', 'value': 1}
+        gif._draw_evaluation()
+        self.assertEqual(gif._board_image.getpixel((gif.board_size,1)),(255,255,255,255))
+        self.assertEqual(gif._board_image.getpixel((gif.board_size,gif.board_size-1)),(255,255,255,255))
+        gif._stockfish._eval =  {'type': 'mate', 'value': 0}
+        gif._board = fakeBoard()
+        gif._draw_evaluation()
+        self.assertEqual(gif._board_image.getpixel((gif.board_size,1)),(0,0,0,255))
+        self.assertEqual(gif._board_image.getpixel((gif.board_size,gif.board_size-1)),(0,0,0,255))
 
     def test_draw_board(self):
         gif = CreateGifFromPGN(pkgutil.get_data(__name__, "test.pgn").decode('utf-8'))
@@ -105,7 +144,7 @@ class TestGIFPGN(unittest.TestCase):
         gif.bar_size = 30
         gif.graph_size = 81
         gif._analysis = True
-        gif._stockfish = fakeStockfish('fake/path', fake_eval=-1200)
+        gif._stockfish = fakeStockfish('fake/path', fake_eval={'type': 'cp', 'value': -1200})
         gif._eval_history = list()
         gif._draw_board()
         self.assertEqual(gif._board_image.size, (560+30, 560+81))
@@ -117,6 +156,18 @@ class TestGIFPGN(unittest.TestCase):
         gif._draw_arrow(24, 28, color='green')
         self.assertNotEqual(original_color, gif._board_image.getpixel(gif._get_square_position(24, center=True)))
         self.assertEqual(gif._board_image.getpixel(gif._get_square_position(24, center=True)), gif._board_image.getpixel(gif._get_square_position(26, center=True)))
+
+    def test_generate(self):
+        gif = CreateGifFromPGN(pkgutil.get_data(__name__, "test.pgn").decode('utf-8'))
+        gif._stockfish = fakeStockfish('fake/path', rand_eval=True)
+        gif._analysis = True
+        gif.enable_arrows = True
+        gif._board = fakeBoard()
+        output_image = BytesIO()
+        gif.generate(output_image)
+        test_image = Image.open(output_image)
+        self.assertEqual(test_image.n_frames, 8)
+
 
 if __name__ == '__main__':
     unittest.main()
