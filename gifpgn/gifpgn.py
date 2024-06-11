@@ -3,8 +3,9 @@ import chess.pgn
 from io import StringIO, BytesIO
 from stockfish import Stockfish
 from PIL import Image, ImageDraw, ImageFont
-from math import floor, atan2, sin, cos, sqrt
+from math import floor, atan2, sin, cos, sqrt, exp
 import pkgutil
+from datetime import timedelta
 
 class CreateGifFromPGN:
     """Creates a GIF of a chess game from a PGN with optional
@@ -21,6 +22,7 @@ class CreateGifFromPGN:
         self._analysis = False
         self._enable_arrows = False
         self._pieces = {}
+        self._images = {}
         self._duration = duration
         self._reverse = reverse
         self._ws_color = '#f0d9b5' # setting the private property to not trigger the setter
@@ -29,6 +31,8 @@ class CreateGifFromPGN:
         self.bar_size = 30
         self.graph_size = 81
         self.max_eval = 1000
+        self.header_size = 20
+        self._enable_headers = False
 
         if pgn_file:
             self._game = chess.pgn.read_game(open(pgn))
@@ -40,6 +44,7 @@ class CreateGifFromPGN:
                              f"pgn_file: {pgn_file} ({'Filepath excepted' if pgn_file == True else 'PGN string expected'})\n\n"
                              f"Provided PGN:\n{pgn}")
         self._board = self._game.board()
+        self._start_color = self._board.turn
 
     @property
     def board_size(self) -> int:
@@ -109,6 +114,24 @@ class CreateGifFromPGN:
     def enable_arrows(self, enable: bool):
         self._enable_arrows = enable
 
+    @property
+    def header_size(self) -> int:
+        """(int) Height of player name headers in pixels."""
+        return self._header_size
+
+    @header_size.setter
+    def header_size(self, barsize: int):
+        self._header_size = barsize
+
+    @property
+    def enable_headers(self) -> bool:
+        """(bool) Whether headers are enabled."""
+        return self._enable_headers
+
+    @enable_headers.setter
+    def enable_headers(self, enhead: bool):
+        self._enable_headers = enhead
+
     def _create_square_images(self, white: bool=True, black: bool=True):
         """Generates the square images for pasting onto the board
 
@@ -150,16 +173,17 @@ class CreateGifFromPGN:
         """
         row = floor(square/8)
         column = square-(row*8)
+        y_offset = self.header_size if self._enable_headers else 0
         if self._reverse:
             if center:
-                return ((7-column)*self._sq_size+(self._sq_size/2), row*self._sq_size+(self._sq_size/2))
+                return ((7-column)*self._sq_size+(self._sq_size/2), row*self._sq_size+(self._sq_size/2)+y_offset)
             else:
-                return ((7-column)*self._sq_size, row*self._sq_size)
+                return ((7-column)*self._sq_size, row*self._sq_size+y_offset)
         else:
             if center:
-                return (column*self._sq_size+(self._sq_size/2), (7-row)*self._sq_size+(self._sq_size/2))
+                return (column*self._sq_size+(self._sq_size/2), (7-row)*self._sq_size+(self._sq_size/2)+y_offset)
             else:
-                return (column*self._sq_size, (7-row)*self._sq_size)
+                return (column*self._sq_size, (7-row)*self._sq_size+y_offset)
 
     def _get_square_color(self, square: int) -> bool:
         """Returns the color of a given square
@@ -189,11 +213,47 @@ class CreateGifFromPGN:
 
     def _draw_board(self):
         """Redraws the entire board"""
+        y_offset = self.header_size*2 if self._enable_headers else 0
         if self._analysis:
-            self._board_image = Image.new('RGBA',(self.board_size + self.bar_size,self.board_size + self.graph_size))
+            self._board_image = Image.new('RGBA',(self.board_size + self.bar_size,self.board_size + self.graph_size + y_offset))
         else:
-            self._board_image = Image.new('RGBA',(self.board_size,self.board_size))
+            self._board_image = Image.new('RGBA',(self.board_size,self.board_size + y_offset))
+        if self._enable_headers:
+            self._draw_headers()
         self._draw_changes(list(chess.SQUARES))
+
+    def _draw_headers(self):
+        """Draw headers and populate with player name, taken pieces, and clock if available"""
+        header_width = self._board_size+(self._bar_size if self._analysis else 0)
+        font = ImageFont.truetype(BytesIO(pkgutil.get_data(__name__, "fonts/Carlito-Regular.ttf")), 14)
+
+        whitebar = Image.new('RGBA',(header_width,self._header_size),"white")
+        draw = ImageDraw.Draw(whitebar)
+        draw.text((3,self._header_size/2),self._game.headers['White'],font=font,fill="black",anchor="lm")
+        if self._clock[chess.WHITE] is not None:
+            draw.text((header_width-3,self._header_size/2),str(timedelta(seconds=round(self._clock[chess.WHITE]))),font=font,fill="black",anchor="rm")
+
+        blackbar = Image.new('RGBA',(header_width,self._header_size),"black")
+        draw = ImageDraw.Draw(blackbar)
+        draw.text((3,self._header_size/2),self._game.headers['Black'],font=font,fill="white",anchor="lm")
+        if self._clock[chess.BLACK] is not None:
+            draw.text((header_width-3,self._header_size/2),str(timedelta(seconds=round(self._clock[chess.BLACK]))),font=font,fill="white",anchor="rm")
+
+        piece_size = self._header_size-2
+        num_takes = {chess.WHITE: 0, chess.BLACK: 0}
+        for piece in self._captures:
+            if piece.color == chess.WHITE:
+                blackbar.paste(self._get_piece_image(piece, piece_size), (100+(piece_size*num_takes[chess.WHITE]),1), self._get_piece_image(piece, piece_size))
+            else:
+                whitebar.paste(self._get_piece_image(piece, piece_size), (100+(piece_size*num_takes[chess.BLACK]),1), self._get_piece_image(piece, piece_size))
+            num_takes[piece.color] += 1
+
+        if self._reverse:
+            self._board_image.paste(blackbar,(0,self._header_size+self._board_size))
+            self._board_image.paste(whitebar,(0,0))
+        else:
+            self._board_image.paste(whitebar,(0,self._header_size+self._board_size))
+            self._board_image.paste(blackbar,(0,0))
 
     def _draw_changes(self, changes: list):
         """Redraws the listed squares
@@ -221,7 +281,24 @@ class CreateGifFromPGN:
         if not p is None:
             self._board_image.paste(self._get_piece_image(p), crd, self._get_piece_image(p))
 
-    def _get_piece_image(self, piece: str) -> object:
+    def _get_image(self, name: str, size: int) -> object:
+        """Load or return an image from the assets directory
+
+        Args:
+            name (str): asset filename
+            size (int): size in pixels
+
+        Returns:
+            object: PIL image object
+        """
+        imgname = f"{name}-{size}"
+        try:
+            return self._images[imgname]
+        except KeyError:
+            self._images[imgname] = Image.open(BytesIO(pkgutil.get_data(__name__, f"assets/{name}.png"))).resize((size, size)) 
+            return self._images[imgname]
+
+    def _get_piece_image(self, piece: str, size: int = 0) -> object:
         """Loads a piece image or returns a piece image if it has already been loaded
 
         Args:
@@ -230,12 +307,14 @@ class CreateGifFromPGN:
         Returns:
             object: PIL image object
         """
+        size = self._sq_size if size == 0 else size
         piece_string = self._piece_string(piece)
+        piecename = f"{piece_string}-{size}"
         try:
-            return self._pieces[piece_string]
+            return self._pieces[piecename]
         except KeyError:
-            self._pieces[piece_string] = Image.open(BytesIO(pkgutil.get_data(__name__, f"assets/{piece_string}.png"))).resize((self._sq_size, self._sq_size)) 
-            return self._pieces[piece_string]
+            self._pieces[piecename] = Image.open(BytesIO(pkgutil.get_data(__name__, f"assets/{piece_string}.png"))).resize((size, size)) 
+            return self._pieces[piecename]
 
     def _draw_arrow(self, square1: int, square2: int, color: str='green'):
         """Draw an arrow between two squares
@@ -285,6 +364,27 @@ class CreateGifFromPGN:
         draw.polygon([c1, c2, c3], fill=arrow[color])
         
         self._board_image = Image.alpha_composite(self._board_image, arrow_mask)
+
+    def get_cpl(self) -> dict:
+        """Get the average centipawn loss (ACPL) for white and black after the gif
+           has been generate with evaluation enabled.
+        """
+        print("-- CPL2 --")
+        cpl = {
+            chess.WHITE: 0,
+            chess.BLACK: 0
+        }
+        if len(self._eval_history) < 2:
+            return cpl
+        for idx, score in enumerate(self._eval_history[1:]):
+            print(idx, self._board.move_stack[idx].uci(), f"{self._eval_history[idx]} -> {score}")
+            movecolor = bool(idx % 2) if self._start_color == chess.BLACK else not(bool(idx % 2))
+            cpl[movecolor] += (score - self._eval_history[idx]) * (-1 if movecolor == chess.BLACK else 1)
+            print(cpl)
+            print("-----")
+        cpl[self._start_color] //= -(len(self._eval_history)//2 + (0 if len(self._eval_history) % 2 else 1))
+        cpl[not(self._start_color)] //= -(len(self._eval_history)//2)
+        return cpl    
     
     def _draw_evaluation(self):
         bar_width = self.bar_size
@@ -317,20 +417,44 @@ class CreateGifFromPGN:
             evstringanchor = "md" if self._reverse else "ma"
 
         self._eval_history.append(evalu)
+        if len(self._eval_history) > 1: self._draw_icon(self._eval_history[-2], self._eval_history[-1])
         evalu = -((evalu-self.max_eval)*bar_height)/(2*self.max_eval)
 
+        y_offset = self.header_size if self._enable_headers else 0
         draw = ImageDraw.Draw(self._board_image)
-        draw.rectangle([(self.board_size,0),(self.board_size+bar_width-1,self.board_size-1)],fill="white")
+        draw.rectangle([(self.board_size,0+y_offset),(self.board_size+bar_width-1,self.board_size-1+y_offset)],fill="white")
         if self._reverse:
-            draw.rectangle([(self.board_size,self.board_size-evalu),(self.board_size+bar_width-1,self.board_size-1)],fill="black")
+            draw.rectangle([(self.board_size,self.board_size-evalu+y_offset),(self.board_size+bar_width-1,self.board_size-1+y_offset)],fill="black")
         else:
-            draw.rectangle([(self.board_size,0),(self.board_size+bar_width-1,evalu)],fill="black")
+            draw.rectangle([(self.board_size,0+y_offset),(self.board_size+bar_width-1,evalu+y_offset)],fill="black")
         font = ImageFont.truetype(BytesIO(pkgutil.get_data(__name__, "fonts/Carlito-Regular.ttf")), 10)
-        draw.text((self.board_size+bar_width/2,evstringy),evstring,font=font,fill=evstringcolor,anchor=evstringanchor)
+        draw.text((self.board_size+bar_width/2,evstringy+y_offset),evstring,font=font,fill=evstringcolor,anchor=evstringanchor)
+    
+    def _draw_icon(self, prev, curr):
+        if self._board.turn == chess.WHITE:
+            prev = -prev
+            curr = -curr
+        
+        def winning_chance(eval):
+            return (2 / (1+exp(-0.004*eval)))-1
+
+        change = winning_chance(curr) - winning_chance(prev)
+        print(f"Winning chance change ({not(self._board.turn)}) ({prev} ({round(winning_chance(prev),3)})) -> {curr} ({round(winning_chance(curr),3)})): {round(change,3)}")
+
+        coords = list(self._get_square_position(self._curr_game_node.move.to_square))
+        coords[0] += int(self._sq_size*0.75) if coords[0] < self._sq_size*7 else int(self._sq_size*0.5)
+        coords[1] -= int(self._sq_size/4)
+        if change < -0.3:
+            self._board_image.paste(self._get_image("blunder", int(self._sq_size/2)), tuple(coords), self._get_image("blunder", int(self._sq_size/2)))
+        elif change < -0.2:
+            self._board_image.paste(self._get_image("mistake", int(self._sq_size/2)), tuple(coords), self._get_image("blunder", int(self._sq_size/2)))
+        elif change < -0.1:
+            self._board_image.paste(self._get_image("inaccuracy", int(self._sq_size/2)), tuple(coords), self._get_image("blunder", int(self._sq_size/2)))
+        
 
     def _draw_graph(self):
         points = []
-        graph_image = Image.new('RGBA', (self.board_size + self.bar_size, self.graph_size))
+        graph_image = Image.new('RGBA', (self.board_size + self.bar_size, self.graph_size), 'black')
         draw = ImageDraw.Draw(graph_image)
         for move_num, evalu in enumerate(self._eval_history):
             points.append(self._get_graph_position(evalu,move_num))
@@ -398,10 +522,21 @@ class CreateGifFromPGN:
             output_file (str): Full path and filename of output file
         """
         self._eval_history = list()
+        self._captures = list()
         self._num_moves = self._game.end().ply()
+        self._clock = {chess.WHITE: 0, chess.BLACK: 0}
+        self._curr_game_node = self._game.next()
         self._draw_board()
         frames = [self._board_image.copy()]
         for move in self._game.mainline_moves():
+            print(f"Move: {move.uci()}")
+            self._clock[self._board.turn] = self._curr_game_node.clock()
+            print(self._clock)
+            if self._board.is_capture(move):
+                if self._board.is_en_passant(move):
+                    self._captures.append(chess.Piece.from_symbol('p' if self._board.turn == chess.WHITE else 'P'))
+                else:
+                    self._captures.append(self._board.piece_at(move.to_square))
             prev = [self._board.piece_at(sq) for sq in chess.SQUARES]
             self._board.push(move)
             changed = [sq for sq in chess.SQUARES if self._board.piece_at(sq) != prev[sq]]
@@ -414,6 +549,8 @@ class CreateGifFromPGN:
             else:
                 self._draw_changes(changed)
             frames.append(self._board_image.copy())
+            self._curr_game_node = self._curr_game_node.next()
+        print(self._captures)
 
         if self._analysis:
             graph_image = self._draw_graph()
@@ -422,7 +559,7 @@ class CreateGifFromPGN:
                 x,y = self._get_graph_position(self._eval_history[m],m)
                 draw = ImageDraw.Draw(g)
                 draw.ellipse([(x-3,y-3),(x+3,y+3)],fill="red")
-                frames[m].paste(g,(0,self.board_size))
+                frames[m].paste(g,(0,self.board_size+(self._header_size*2 if self._enable_headers else 0)))
 
         last_frame = frames[-1].copy()
         for _ in range(20):
@@ -436,6 +573,6 @@ class CreateGifFromPGN:
                        duration=int(self._duration*1000),
                        loop=0)
 
-    def output_image(self, image): # dump an image for bug testing
+    def output_image(self, image, name="output.png"): # dump an image for bug testing
         print("Saving image")
-        image.save("output.png", format="PNG")
+        image.save(name, format="PNG")
