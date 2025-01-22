@@ -265,7 +265,7 @@ class CreateGifFromPGN:
         """Draw headers and populate with player name, taken pieces, and clock if available"""
 
         header_width = self._canvas_size()[0]
-        font = ImageFont.truetype(BytesIO(pkgutil.get_data(__name__, "fonts/Carlito-Regular.ttf")), 14)
+        font = ImageFont.truetype(BytesIO(pkgutil.get_data(__name__, "fonts/Carlito-Regular.ttf")), int(self._header_size*0.7))
 
         clock = {
             not self._game.turn(): self._game.clock(),
@@ -285,12 +285,13 @@ class CreateGifFromPGN:
             draw.text((header_width-3,self._header_size/2),str(timedelta(seconds=round(clock[chess.BLACK]))),font=font,fill="white",anchor="rm")
 
         piece_size = self._header_size-2
+        piece_offset = int(max(draw.textlength(self._game_root.headers['White'], font), draw.textlength(self._game_root.headers['Black'], font))) + self._header_size
         num_takes = {chess.WHITE: 0, chess.BLACK: 0}
         for piece in captures:
             if piece.color == chess.WHITE:
-                blackbar.paste(self._get_piece_image(piece, piece_size), (100+(piece_size*num_takes[chess.WHITE]),1), self._get_piece_image(piece, piece_size))
+                blackbar.paste(self._get_piece_image(piece, piece_size), (piece_offset+(piece_size*num_takes[chess.WHITE]),1), self._get_piece_image(piece, piece_size))
             else:
-                whitebar.paste(self._get_piece_image(piece, piece_size), (100+(piece_size*num_takes[chess.BLACK]),1), self._get_piece_image(piece, piece_size))
+                whitebar.paste(self._get_piece_image(piece, piece_size), (piece_offset+(piece_size*num_takes[chess.BLACK]),1), self._get_piece_image(piece, piece_size))
             num_takes[piece.color] += 1
 
         return {
