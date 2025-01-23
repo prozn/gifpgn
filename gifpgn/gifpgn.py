@@ -362,16 +362,16 @@ class CreateGifFromPGN:
 
         :return Image.Image: PIL Image object containing the graph
         """
-        points = []
+        points = {}
         graph_image = Image.new('RGBA', (self.board_size + (self._bar_size if self._bar_size is not None else 0), self._graph_size), 'black')
         draw = ImageDraw.Draw(graph_image)
         game = self._game_root
         while True:
             move_num = game.ply()
             evalu = self._eval(game).white().score(mate_score=self.max_eval)
-            prev_evalu = 0 if move_num == 0 else self._eval(game.parent).white().score(mate_score=self.max_eval)
-            points.append(self._get_graph_position(self._eval(game).white(),move_num))
-            if move_num > 0:
+            prev_evalu = 0 if game.parent is None else self._eval(game.parent).white().score(mate_score=self.max_eval)
+            points[move_num] = self._get_graph_position(self._eval(game).white(),move_num)
+            if game.parent is not None:
                 zprev = self._get_graph_position(chess.engine.Cp(0),move_num-1)
                 znew = self._get_graph_position(chess.engine.Cp(0),move_num)
                 if evalu * prev_evalu < 0: # eval symbols different => crossing the zero line
@@ -387,7 +387,8 @@ class CreateGifFromPGN:
             if game.is_end():
                 break
             game = game.next()
-        draw.line(points,fill='white',width=1)
+        points_list = [point for _, point in sorted(points.items())]
+        draw.line(points_list,fill='white',width=1)
         x_axis_f = self._get_graph_position(chess.engine.Cp(0), 0)
         x_axis_t = self._get_graph_position(chess.engine.Cp(0), self._game_root.end().ply())
         draw.line([x_axis_f, x_axis_t], fill="grey", width=1)
@@ -583,7 +584,7 @@ class CreateGifFromPGN:
         :param int move:
         :return Coord: Coordinates on the evaluation graph
         """
-        x = (self._canvas_size()[0]/self._game_root.end().ply())*move
+        x = (self._canvas_size()[0]/(self._game_root.end().ply()-self._game_root.ply()))*move
         y = -((evalu.score(mate_score=self.max_eval)-self.max_eval)*(self._graph_size-1))/(2*self.max_eval)
         return (floor(x),floor(y))
     
