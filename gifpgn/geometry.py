@@ -1,7 +1,7 @@
 from typing import Tuple, Optional
 from math import cos, sin, atan2, sqrt
 
-from ._t import Coord
+from ._types import Coord
 
 def rotate_around_point(point: Coord, radians: float, origin: Coord=(0, 0)) -> Coord:
     x, y = point

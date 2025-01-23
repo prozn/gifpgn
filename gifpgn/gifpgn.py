@@ -10,7 +10,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from typing import List, Dict, Tuple, Optional, Literal
 
-from ._t import *
+from ._types import *
 from .exceptions import (
     MissingAnalysisError,
     MoveOutOfRangeError
