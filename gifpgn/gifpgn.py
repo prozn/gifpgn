@@ -207,6 +207,7 @@ class CreateGifFromPGN:
             limit = chess.engine.Limit(depth=18)
             gif = CreateGifFromPGN(game)
             gif.add_analysis_to_pgn(engine, limit)
+            engine.close()
             ...
 
         .. warning::
@@ -215,6 +216,12 @@ class CreateGifFromPGN:
             
             A depth limit of 18 provides a reasonable trade-off
             between accuracy and compute time.
+
+        .. note::
+            Once you have finished with the `chess.engine.SimpleEngine` instance it should be
+            closed using the `close()` method. Otherwise your program will not exit as expected.
+
+
 
         :param chess.engine.SimpleEngine engine: Instance of `chess.engine.SimpleEngine 
         <https://python-chess.readthedocs.io/en/latest/engine.html>`_ from python-chess 
