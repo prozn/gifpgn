@@ -1,3 +1,63 @@
+"""Generate a GIF of a chess game from a PGN with optional:
+
+* Analysis bar
+* Analysis chart
+* Numerical Annotation Glyphs (NAGs)
+* Move and check arrows
+
+Demo
+----
+
+GIF with all features enabled
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: python
+
+    import chess
+    import chess.engine
+    import chess.pgn
+    import io
+    from gifpgn import CreateGifFromPGN, MissingAnalysisError
+
+    pgn_string = ...
+    game = chess.pgn.read_game(io.StringIO(pgn_string))
+    g = CreateGifFromPGN(game)
+    g.enable_arrows()
+    g.add_headers(height=20)
+    try:
+        g.add_analysis_bar()    
+    except MissingAnalysisError:
+        with chess.engine.SimpleEngine.popen_uci("/path/to/stockfish") as engine:
+            g.add_analysis_to_pgn(engine, chess.engine.Limit(depth=18))
+        g.add_analysis_bar()
+    g.add_analysis_graph()
+    g.enable_nags()
+    gif = g.generate("test_gif.gif")
+
+
+.. image:: https://i.imgur.com/hxQM0cl.gif
+
+
+Small GIF with no analysis
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: python
+
+    import chess.pgn
+    import io
+    from from gifpgn import CreateGifFromPGN
+
+    pgn_string = ...
+    game = chess.pgn.read_game(io.StringIO(pgn_string))
+    g = CreateGifFromPGN(game)
+    g.board_size = 240
+    g.generate("test_small_gif.gif")
+
+
+.. image:: https://i.imgur.com/HkT2K8k.gif
+
+"""
+
 from io import BytesIO
 from math import floor
 import pkgutil
@@ -23,29 +83,7 @@ from .geometry import (
 )
 
 class CreateGifFromPGN:
-    """Creates a GIF of a chess game from a PGN with optional features such as stockfish evaluation chart, 
-    move arrows, and numeric anotation glyphs (blunder, mistake  etc)
-
-    Example
-    =======
-
-    .. code-block:: python
-        game = chess.pgn.read_game(io.StringIO(pgn_string))
-        engine = chess.engine.SimpleEngine.popen_uci("/path/to/stockfish")
-        limit = chess.engine.Limit(depth=18)
-        g = CreateGifFromPGN(game)
-        g.board_size = 560
-        g.frame_duration = 0.75
-        g.max_eval = 1000
-        g.enable_arrows()
-        g.add_headers(height=25)
-        g.add_analysis_to_pgn(engine, limit)
-        g.add_analysis_bar()
-        g.add_analysis_graph()
-        g.enable_nags()
-        g.reverse_board()
-        g.generate("output.gif")
-
+    """
     :param chess.pgn.Game game: An instance of :class:`chess.pgn.Game` from the python-chess library.
     """
     def __init__(self, game: chess.pgn.Game):
@@ -63,9 +101,9 @@ class CreateGifFromPGN:
         self._reverse: bool = False
         self._arrows: bool = False
         self._nag: bool = False
-        self._bar_size: Optional[int] = False
-        self._graph_size: Optional[int] = False
-        self._header_size: Optional[int] = False
+        self._bar_size: Optional[int] = None
+        self._graph_size: Optional[int] = None
+        self._header_size: Optional[int] = None
         self._game_root: chess.pgn.Game = game
         self._game: Optional[chess.pgn.Game] = None
         self._board: chess.Board = self._game_root.board()
@@ -78,6 +116,7 @@ class CreateGifFromPGN:
     @property
     def board_size(self) -> int:
         """int: Size of the board in pixels, defaults to 480
+
         .. note::
             Size will be rounded down to the nearest multiple of 8
         """
@@ -123,6 +162,7 @@ class CreateGifFromPGN:
 
     def add_analysis_bar (self, width: int=30) -> None:
         """Adds an analysis bar to the right side of the chess board.
+
         .. note::
             Requires that a PGN has been loaded with ``[%eval ...]`` annotations for
             each half move.
@@ -138,6 +178,7 @@ class CreateGifFromPGN:
 
     def add_analysis_graph(self, height: int=81) -> None:
         """Adds an analysis graph to the bottom of the chess board.
+
         .. note::
             Requires that a PGN has been loaded with ``[%eval ...]`` annotations for
             each half move.
@@ -154,6 +195,7 @@ class CreateGifFromPGN:
 
     def enable_nags(self):
         """Enable numerical annoation glyphs
+
         .. note::
             Requires that a PGN has been loaded with ``[%eval ...]`` annotations for
             each half move.
@@ -193,6 +235,8 @@ class CreateGifFromPGN:
         game = self._game_root
         while True:
             if game.eval() is None:
+                if game.board().is_checkmate():
+                    return True
                 return False
             if game.is_end():
                 break
@@ -200,8 +244,10 @@ class CreateGifFromPGN:
         return True
     
     def add_analysis_to_pgn(self, engine: chess.engine.SimpleEngine, engine_limit: chess.engine.Limit) -> None:
-        """Calculates and adds ``[%eval ...]`` annotations to each half move in the PGN
+        """Calculates and adds `[%eval ...]` annotations to each half move in the PGN
+
         .. code-block:: python
+
             game = chess.pgn.read_game(io.StringIO(pgn_string))
             engine = chess.engine.SimpleEngine.popen_uci("/path/to/stockfish")
             limit = chess.engine.Limit(depth=18)
@@ -209,24 +255,20 @@ class CreateGifFromPGN:
             gif.add_analysis_to_pgn(engine, limit)
             engine.close()
             ...
-
+        
         .. warning::
             Engine analysis is a CPU intensive operation, ensure that an appropriate
             limit is applied. 
             
             A depth limit of 18 provides a reasonable trade-off
             between accuracy and compute time.
-
+        
         .. note::
             Once you have finished with the `chess.engine.SimpleEngine` instance it should be
             closed using the `close()` method. Otherwise your program will not exit as expected.
 
-
-
-        :param chess.engine.SimpleEngine engine: Instance of `chess.engine.SimpleEngine 
-        <https://python-chess.readthedocs.io/en/latest/engine.html>`_ from python-chess 
-        :param chess.engine.Limit engine_limit: Instance of `chess.engine.Limit 
-        <https://python-chess.readthedocs.io/en/latest/engine.html#chess.engine.Limit>`_ from python-chess 
+        :param chess.engine.SimpleEngine engine: Instance of `chess.engine.SimpleEngine <https://python-chess.readthedocs.io/en/latest/engine.html>`_ from python-chess 
+        :param chess.engine.Limit engine_limit: Instance of `chess.engine.Limit <https://python-chess.readthedocs.io/en/latest/engine.html#chess.engine.Limit>`_ from python-chess 
         """
         game = self._game_root
         while True:
@@ -297,8 +339,8 @@ class CreateGifFromPGN:
         that lead to the current `self._game` ply"""
         if self._game.move is None:
             return
-        prev =  self._game.parent.eval().relative.wdl(model="sf", ply=self._game.parent.ply())
-        curr = self._game.eval().pov(not self._game.eval().turn).wdl(model="sf", ply=self._game.ply())
+        prev =  self._eval(self._game.parent).relative.wdl(model="sf", ply=self._game.parent.ply())
+        curr = self._eval(self._game).pov(not self._eval(self._game).turn).wdl(model="sf", ply=self._game.ply())
         change = curr.expectation() - prev.expectation()
 
         nag = None
@@ -326,9 +368,9 @@ class CreateGifFromPGN:
         game = self._game_root
         while True:
             move_num = game.ply()
-            evalu = game.eval().white().score(mate_score=self.max_eval)
-            prev_evalu = 0 if move_num == 0 else game.parent.eval().white().score(mate_score=self.max_eval)
-            points.append(self._get_graph_position(game.eval().white(),move_num))
+            evalu = self._eval(game).white().score(mate_score=self.max_eval)
+            prev_evalu = 0 if move_num == 0 else self._eval(game.parent).white().score(mate_score=self.max_eval)
+            points.append(self._get_graph_position(self._eval(game).white(),move_num))
             if move_num > 0:
                 zprev = self._get_graph_position(chess.engine.Cp(0),move_num-1)
                 znew = self._get_graph_position(chess.engine.Cp(0),move_num)
@@ -442,6 +484,19 @@ class CreateGifFromPGN:
     
     # Helper Functions
 
+    def _eval(self, game: chess.pgn.Game):
+        """If a position is mate it will not have an ``[%eval ...]`` annotation. Instead
+        we have to manually return a Mate(0) PovScore
+
+        :param chess.pgn.Game game: Game at current position to evaluate
+        """
+        if game.eval() is None:
+            if game.board().is_checkmate():
+                return chess.engine.PovScore(chess.engine.Mate(0), game.turn())
+            else:
+                raise MissingAnalysisError
+        return game.eval()
+
     def _get_square_position(self, square: chess.Square, center: bool=False) -> Coord:
         """Calculates the position of either the top left of center of the specified square
         taking into account whether the board is reversed by `self._reverse`
@@ -466,7 +521,7 @@ class CreateGifFromPGN:
 
     def _get_square_image (self, color: chess.Color) -> Image.Image:
         """Retrieves or creates a square image of the given color, sized for the current
-        value of `self.board_size`
+        value of ``self.board_size``
 
         :param chess.Color color: 
         :return Image.Image: PIL Image object containing an image of the given square color
@@ -538,7 +593,7 @@ class CreateGifFromPGN:
         :param chess.engine.Score evalu:
         :return int: 
         """
-        max_eval = self.max_eval + 0 if evalu.mate() is None else abs(evalu.mate())
+        max_eval = self.max_eval + (0 if evalu.mate() is None else abs(evalu.mate()))
         y = ((evalu.score(mate_score=max_eval)/max_eval)+1)*(self.board_size/2)
         if not self._reverse:
             y = self.board_size - y
@@ -559,6 +614,7 @@ class CreateGifFromPGN:
         raw bytes if no file path is specified.
 
         .. code-block:: python
+
             game = chess.pgn.read_game(io.StringIO(pgn_string))
             engine = chess.engine.SimpleEngine.popen_uci("/path/to/stockfish")
             limit = chess.engine.Limit(depth=18)
@@ -568,7 +624,7 @@ class CreateGifFromPGN:
             ...
 
         :param Optional[str] output_file: Filepath to save to, defaults to None
-        :return Optional[BytesIO]: Raw bytes of the generated GIF if `output_file` parameter is set, else returns `None`
+        :return Optional[BytesIO]: Raw bytes of the generated GIF if ``output_file`` parameter is set, else returns ``None``
         """
         captures: List[chess.Piece] = []
         frames: List[Image.Image] = []
@@ -603,11 +659,11 @@ class CreateGifFromPGN:
             frame.paste(self._board_image, (0, header_size))
 
             if self._bar_size is not None:
-                bar = self._draw_eval_bar(self._game.eval().white())
+                bar = self._draw_eval_bar(self._eval(self._game).white())
                 frame.paste(bar, (self.board_size,header_size))
             if self._graph_size is not None:
                 graph = graph_background.copy()
-                self._draw_graph_point(graph, self._game.eval(), self._game.ply())
+                self._draw_graph_point(graph, self._eval(self._game), self._game.ply())
                 frame.paste(graph, (0, self._canvas_size()[1]-graph_size))
             if self._header_size is not None:
                 headers = self._draw_headers(captures)
