@@ -46,16 +46,6 @@ def shorten_line(c1: Coord, c2: Coord, pix: int) -> Tuple[Coord,Coord]:
     dy *= l-pix
     return (c1,(c1[0]+dx, c1[1]+dy))
 
-    """Returns the intersection point of two lines, or None if no intersection
-
-    Args:
-        line1 (tuple): Line 1 defined by a tuple containing two x,y tuples
-        line2 (tuple): Line 2 defined by a tuple containing two x,y tuples
-
-    Returns:
-        tuple: A tuple contianing the x,y coordinates, or None if no intersection
-    """
-
 def line_intersection(line1: Tuple[Coord, Coord], line2: Tuple[Coord, Coord]) -> Optional[Coord]:
     """Returns the intersection point of two line, or None if no intersection
 
