@@ -3,7 +3,7 @@ from math import cos, sin, atan2, sqrt
 
 from ._types import Coord
 
-def rotate_around_point(point: Coord, radians: float, origin: Coord=(0, 0)) -> Coord:
+def rotate_around_point(point: Coord, radians: float, origin: Coord=Coord((0, 0))) -> Coord:
     """Rotates point around origin by radians
 
     :param Coord point: 
@@ -13,9 +13,9 @@ def rotate_around_point(point: Coord, radians: float, origin: Coord=(0, 0)) -> C
     """
     x, y = point
     ox, oy = origin
-    qx = ox + cos(radians) * (x - ox) + sin(radians) * (y - oy)
-    qy = oy + -sin(radians) * (x - ox) + cos(radians) * (y - oy)
-    return qx, qy
+    qx = int(ox + cos(radians) * (x - ox) + sin(radians) * (y - oy))
+    qy = int(oy + -sin(radians) * (x - ox) + cos(radians) * (y - oy))
+    return Coord((qx, qy))
 
 def angle_between_two_points(point1: Coord, point2: Coord) -> float:
     """Returns the angle of a line between two points in radians
@@ -44,7 +44,7 @@ def shorten_line(c1: Coord, c2: Coord, pix: int) -> Tuple[Coord,Coord]:
         dy /= l
     dx *= l-pix
     dy *= l-pix
-    return (c1,(c1[0]+dx, c1[1]+dy))
+    return (c1,Coord((int(c1[0]+dx), int(c1[1]+dy))))
 
 def line_intersection(line1: Tuple[Coord, Coord], line2: Tuple[Coord, Coord]) -> Optional[Coord]:
     """Returns the intersection point of two line, or None if no intersection
@@ -67,4 +67,4 @@ def line_intersection(line1: Tuple[Coord, Coord], line2: Tuple[Coord, Coord]) ->
     d = (det(*line1), det(*line2))
     x = det(d, xdiff) / div
     y = det(d, ydiff) / div
-    return x, y
+    return Coord((x, y))

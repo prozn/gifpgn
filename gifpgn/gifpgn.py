@@ -68,7 +68,7 @@ import chess.pgn
 import chess.engine
 from PIL import Image, ImageDraw, ImageFont
 
-from typing import List, Dict, Tuple, Optional, Literal
+from typing import List, Dict, Tuple, Optional, Literal, Union
 
 from ._types import *
 from .exceptions import (
@@ -93,10 +93,10 @@ class CreateGifFromPGN:
         if game.end().ply() < 1:
             raise ValueError(f"Provided game does not have any moves.")
 
-        self.board_size: int = 480
-        self.square_colors: Dict[chess.Color, str] = {chess.WHITE: '#f0d9b5', chess.BLACK: '#b58863'}
-        self.frame_duration: float = 0.5
-        self.max_eval: int = 1000
+        self.board_size = 480
+        self.square_colors = {chess.WHITE: '#f0d9b5', chess.BLACK: '#b58863'}
+        self.frame_duration = 0.5
+        self.max_eval = 1000
 
         self._reverse: bool = False
         self._arrows: bool = False
@@ -105,10 +105,10 @@ class CreateGifFromPGN:
         self._graph_size: Optional[int] = None
         self._header_size: Optional[int] = None
         self._game_root: chess.pgn.Game = game
-        self._game: Optional[chess.pgn.Game] = None
+        self._game: Union[chess.pgn.Game, chess.pgn.ChildNode]
         self._board: chess.Board = self._game_root.board()
-        self._start_color: chess.Color = self._game_root.turn
-        self._board_image: Optional[Image.Image] = None
+        self._start_color: chess.Color = self._game_root.turn()
+        self._board_image: Image.Image
         self._images: Dict[str, Image.Image] = {}
         self._square_images: Dict[chess.Color, Image.Image] = {}
         self._pieces: Dict[str, Image.Image] = {}
@@ -238,7 +238,7 @@ class CreateGifFromPGN:
                 if game.board().is_checkmate():
                     return True
                 return False
-            if game.is_end():
+            if game.next() is None:
                 break
             game = game.next()
         return True
@@ -274,7 +274,7 @@ class CreateGifFromPGN:
         while True:
             info = engine.analyse(game.board(), engine_limit)
             game.set_eval(info['score'], info['depth'])
-            if game.is_end():
+            if game.next() is None:
                 break
             game = game.next()
 
@@ -321,15 +321,15 @@ class CreateGifFromPGN:
         to_crd = self._get_square_position(to_square, center=True)
         draw = ImageDraw.Draw(arrow_mask)
         # draw arrow line
-        draw.line(shorten_line(from_crd, to_crd, self._sq_size/2), fill=arrow[color], width=floor(self._sq_size/4))
+        draw.line(shorten_line(from_crd, to_crd, int(self._sq_size/2)), fill=arrow[color], width=floor(self._sq_size/4))
         
         # draw arrow head
         line_degrees = angle_between_two_points(Coord(from_crd), Coord(to_crd))
         x0, y0 = from_crd
         x1, y1 = to_crd
         c1 = to_crd
-        c2 = rotate_around_point(Coord((x1-self._sq_size/2, y1-self._sq_size/3)), line_degrees, Coord(c1))
-        c3 = rotate_around_point(Coord((x1-self._sq_size/2, y1+self._sq_size/3)), line_degrees, Coord(c1))
+        c2 = rotate_around_point(Coord((int(x1-self._sq_size/2), int(y1-self._sq_size/3))), line_degrees, Coord(c1))
+        c3 = rotate_around_point(Coord((int(x1-self._sq_size/2), int(y1+self._sq_size/3))), line_degrees, Coord(c1))
         draw.polygon([c1, c2, c3], fill=arrow[color])
 
         self._board_image = Image.alpha_composite(self._board_image, arrow_mask)
@@ -508,9 +508,9 @@ class CreateGifFromPGN:
         """
         row = abs(chess.square_rank(square)-(0 if self._reverse else 7))
         column = abs(chess.square_file(square)-(7 if self._reverse else 0))
-        x = (column*self._sq_size) + (self._sq_size/2 if center else 0)
-        y = (row*self._sq_size) + (self._sq_size/2 if center else 0)
-        return (x,y)
+        x = int((column*self._sq_size) + (self._sq_size/2 if center else 0))
+        y = int((row*self._sq_size) + (self._sq_size/2 if center else 0))
+        return Coord((x, y))
     
     def _get_square_color(self, square: chess.Square) -> chess.Color:
         """Returns the color of the given square
@@ -560,7 +560,7 @@ class CreateGifFromPGN:
         else:
             return "b%s" % p.lower()
 
-    def _get_piece_image(self, piece: str, size: int = 0) -> Image.Image:
+    def _get_piece_image(self, piece: chess.Piece, size: int = 0) -> Image.Image:
         """Return from the cache or retreive from assets directory the provided piece image,
         resized to the given size
 
@@ -586,7 +586,7 @@ class CreateGifFromPGN:
         """
         x = (self._canvas_size()[0]/(self._game_root.end().ply()-self._game_root.ply()))*move
         y = -((evalu.score(mate_score=self.max_eval)-self.max_eval)*(self._graph_size-1))/(2*self.max_eval)
-        return (floor(x),floor(y))
+        return Coord((floor(x), floor(y)))
     
     def _get_bar_position(self, evalu: chess.engine.Score) -> int:
         """Returns the y coordinate on the evaluation bar for a given evaluation
@@ -673,7 +673,7 @@ class CreateGifFromPGN:
 
             frames.append(frame)
 
-            if self._game.is_end():
+            if self._game.next() is None:
                 break
             self._game = self._game.next()
         
