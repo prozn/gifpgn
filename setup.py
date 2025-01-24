@@ -2,13 +2,13 @@ import pathlib
 from setuptools import setup
 
 HERE = pathlib.Path(__file__).parent
-README = (HERE / "README.md").read_text()
+README = (HERE / "README.rst").read_text()
 
 setup(name='gifpgn',
       version='1.0.0',
       description='Convert a PGN into a GIF with stockfish evaluation chart',
       long_description=README,
-      long_description_content_type="text/markdown",
+      long_description_content_type="text/x-rst",
       url='http://github.com/prozn/gifpgn',
       author='Prozn',
       license='GPLv3+',
