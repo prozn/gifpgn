@@ -5,8 +5,8 @@ gifpgn: Chess GIF Generator for Python
     :target: https://pypi.org/project/gifpgn/
     :alt: PyPI
 
-.. image:: https://pepy.tech/badge/gifpgn
-    :target: https://pepy.tech/project/gifpgn
+.. image:: https://img.shields.io/pypi/dm/gifpgn
+    :target: https://pypistats.org/packages/gifpgn
     :alt: Downloads
 
 .. image:: https://coveralls.io/repos/github/prozn/gifpgn/badge.svg
