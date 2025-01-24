@@ -26,7 +26,7 @@ pip-log.txt
 pip-delete-this-directory.txt
 
 # Docs
-docs/_build
+docs/build
 
 # Other dev files
 test_chess.py
