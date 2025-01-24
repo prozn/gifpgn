@@ -1,32 +1,13 @@
-gifpgn package
-==============
+Generate
+========
 
-Submodules
-----------
-
-gifpgn.gifpgn module
---------------------
+Main class used to generate a GIF. See :doc:`readme </index>` for usage.
 
 .. automodule:: gifpgn.gifpgn
    :members:
    :undoc-members:
    :show-inheritance:
 
-gifpgn.exceptions module
-------------------------
-
-.. automodule:: gifpgn.exceptions
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-gifpgn.geometry module
-----------------------
-
-.. automodule:: gifpgn.geometry
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 .. Module contents
    ---------------

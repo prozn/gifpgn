@@ -10,4 +10,6 @@
    :maxdepth: 2
    :caption: Contents:
    
-   modules
+   gifpgn
+   exceptions
+   geometry

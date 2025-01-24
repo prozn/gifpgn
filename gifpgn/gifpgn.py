@@ -90,7 +90,7 @@ class CreateGifFromPGN:
 
     @property
     def max_eval(self) -> int:
-        """int: Maximum evaluation displayed on analysis graph or bar, defaults to 1000"""
+        """int: Maximum evaluation displayed on analysis graph or bar in centipawns, defaults to 1000"""
         return self._max_eval
     
     @max_eval.setter
@@ -107,7 +107,7 @@ class CreateGifFromPGN:
             Requires that a PGN has been loaded with ``[%eval ...]`` annotations for
             each half move.
             
-            Alternatively the PGN can be decorated using the `add_analysis_to_pgn` method.
+            Alternatively the PGN can be decorated using the ``add_analysis_to_pgn`` method.
 
         :param int width: Width of the analysis bar in pixels, defaults to 30
         :raises MissingAnalysisError: At least one ply in the PGN has a missing ``[%eval ...]`` annotation
@@ -123,7 +123,7 @@ class CreateGifFromPGN:
             Requires that a PGN has been loaded with ``[%eval ...]`` annotations for
             each half move.
 
-            Alternatively the PGN can be decorated using the `add_analysis_to_pgn` method.
+            Alternatively the PGN can be decorated using the ``add_analysis_to_pgn`` method.
 
         :param int height: Height of the analysis graph in pixels, defaults to 81
         :raises MissingAnalysisError: At least one ply in the PGN has a missing ``[%eval ...]`` annotation
@@ -140,7 +140,7 @@ class CreateGifFromPGN:
             Requires that a PGN has been loaded with ``[%eval ...]`` annotations for
             each half move.
 
-            Alternatively the PGN can be decorated using the `add_analysis_to_pgn` method.
+            Alternatively the PGN can be decorated using the ``add_analysis_to_pgn`` method.
 
         :raises MissingAnalysisError: At least one ply in the PGN has a missing ``[%eval ...]`` annotation
         """
@@ -184,7 +184,7 @@ class CreateGifFromPGN:
         return True
     
     def add_analysis_to_pgn(self, engine: chess.engine.SimpleEngine, engine_limit: chess.engine.Limit) -> None:
-        """Calculates and adds `[%eval ...]` annotations to each half move in the PGN
+        """Calculates and adds ``[%eval ...]`` annotations to each half move in the PGN
 
         .. code-block:: python
 
@@ -204,8 +204,8 @@ class CreateGifFromPGN:
             between accuracy and compute time.
         
         .. note::
-            Once you have finished with the `chess.engine.SimpleEngine` instance it should be
-            closed using the `close()` method. Otherwise your program will not exit as expected.
+            Once you have finished with the ``chess.engine.SimpleEngine`` instance it should be
+            closed using the ``close()`` method. Otherwise your program will not exit as expected.
 
         :param chess.engine.SimpleEngine engine: Instance of `chess.engine.SimpleEngine <https://python-chess.readthedocs.io/en/latest/engine.html>`_ from python-chess 
         :param chess.engine.Limit engine_limit: Instance of `chess.engine.Limit <https://python-chess.readthedocs.io/en/latest/engine.html#chess.engine.Limit>`_ from python-chess 
@@ -638,6 +638,6 @@ class CreateGifFromPGN:
             target.seek(0)
             return target
 
-    def output_image(self, image, name="output.png"): # dump an image for bug testing
+    def _output_image(self, image, name="output.png"): # dump an image for bug testing
         print("Saving image")
         image.save(name, format="PNG")

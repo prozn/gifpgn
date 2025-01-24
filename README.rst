@@ -1,3 +1,18 @@
+gifpgn: Chess GIF Generator for Python
+======================================
+
+.. image:: https://img.shields.io/pypi/v/gifpgn?color=blue
+    :target: https://pypi.org/project/gifpgn/
+    :alt: PyPI
+
+.. image:: https://pepy.tech/badge/gifpgn
+    :target: https://pepy.tech/project/gifpgn
+    :alt: Downloads
+
+.. image:: https://coveralls.io/repos/github/prozn/gifpgn/badge.svg
+    :target: https://coveralls.io/github/prozn/gifpgn
+    :alt: Coverage Status
+
 Introduction
 ------------
 
