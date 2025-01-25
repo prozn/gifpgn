@@ -28,5 +28,8 @@ pip-delete-this-directory.txt
 # Docs
 docs/build
 
+# Tests
+.pytest_cache
+
 # Other dev files
 test_chess.py

@@ -30,7 +30,7 @@ class CreateGifFromPGN:
         if game is None:
             raise ValueError("Provided game is not valid/empty")
         
-        if game.end().ply() < 1:
+        if game.end().ply() - game.ply() < 1:
             raise ValueError(f"Provided game does not have any moves.")
 
         self.board_size = 480
@@ -113,7 +113,7 @@ class CreateGifFromPGN:
         :raises MissingAnalysisError: At least one ply in the PGN has a missing ``[%eval ...]`` annotation
         """
         if not self.pgn_has_analysis():
-            raise MissingAnalysisError("PGN did not contain evaluations for each half move")
+            raise MissingAnalysisError("PGN did not contain evaluations for every half move")
         self._bar_size = width
 
     def add_analysis_graph(self, height: int=81) -> None:
@@ -130,7 +130,7 @@ class CreateGifFromPGN:
         """
         # PGN needs to be decorated with evaluations for each half move
         if not self.pgn_has_analysis():
-            raise MissingAnalysisError("PGN did not contain evaluations for each half move")
+            raise MissingAnalysisError("PGN did not contain evaluations for every half move")
         self._graph_size = height
 
     def enable_nags(self):
