@@ -4,6 +4,8 @@ import chess.engine
 
 from .exceptions import MissingAnalysisError
 
+from typing import Dict, List
+
 
 class PGN:
     """Class for working with ``[%eval ...]`` annotations
@@ -45,6 +47,36 @@ class PGN:
                 break
             game = game.next()
         return game.game()
+    
+    def acpl(self, max_eval: int = 1000) -> Dict[chess.Color, int]:
+        """Calculate the average centipawn loss for each player.
+
+        :param int max_eval: The maximum evaluation to consider when calculating the ACPL, defaults to 1000
+        :raises MissingAnalysisError: PGN is not decorated with ``[%eval ...]`` annotations
+        :return Dict[chess.Color, int]: Dictionary containing the ACPL for each player
+        """
+        if not self.has_analysis():
+            raise MissingAnalysisError
+        acpl: Dict[chess.Color, List[int]] = {
+            chess.WHITE: [0, 0],
+            chess.BLACK: [0, 0]
+        }
+        game = self._game_root
+        while True:
+            if game.parent is not None:
+                curr_eval = min(max_eval, _eval(game).pov(not game.turn()).score(mate_score=max_eval), key=abs)
+                prev_eval = min(max_eval, _eval(game.parent).pov(not game.turn()).score(mate_score=max_eval), key=abs)
+                print(f"{not game.turn()} : {prev_eval} -> {curr_eval}")
+                acpl[not game.turn()][0] += curr_eval - prev_eval
+                acpl[not game.turn()][1] += 1
+            if game.next() is None:
+                break
+            game = game.next()
+        return {
+            chess.WHITE: int(acpl[chess.WHITE][0] / acpl[chess.WHITE][1] * -1),
+            chess.BLACK: int(acpl[chess.BLACK][0] / acpl[chess.BLACK][1] * -1)
+        }
+
 
     def export(self) -> str:
         """Output the current PGN
