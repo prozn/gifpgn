@@ -35,19 +35,18 @@ GIF with all features enabled
     import chess.engine
     import chess.pgn
     import io
-    from gifpgn import CreateGifFromPGN, MissingAnalysisError
+    from gifpgn import CreateGifFromPGN
+    from gifpgn.utils import PGN
 
     pgn_string = ...
     game = chess.pgn.read_game(io.StringIO(pgn_string))
+    if not PGN(game).has_analysis():
+        with chess.engine.SimpleEngine.popen_uci("/path/to/stockfish") as engine:
+            game = PGN(game).add_analysis(engine, chess.engine.Limit(depth=18))
     g = CreateGifFromPGN(game)
     g.enable_arrows()
     g.add_headers(height=20)
-    try:
-        g.add_analysis_bar()    
-    except MissingAnalysisError:
-        with chess.engine.SimpleEngine.popen_uci("/path/to/stockfish") as engine:
-            g.add_analysis_to_pgn(engine, chess.engine.Limit(depth=18))
-        g.add_analysis_bar()
+    g.add_analysis_bar()
     g.add_analysis_graph()
     g.enable_nags()
     gif = g.generate("test_gif.gif")
