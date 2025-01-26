@@ -37,7 +37,8 @@ class PGN:
         :param chess.engine.SimpleEngine engine: Instance of
             `chess.engine.SimpleEngine <https://python-chess.readthedocs.io/en/latest/engine.html>`_ from python-chess
         :param chess.engine.Limit engine_limit: Instance of
-            `chess.engine.Limit <https://python-chess.readthedocs.io/en/latest/engine.html#chess.engine.Limit>`_ from python-chess
+            `chess.engine.Limit <https://python-chess.readthedocs.io/en/latest/engine.html#chess.engine.Limit>`_
+            from python-chess
         """
         game = self._game_root
         while True:
@@ -47,7 +48,7 @@ class PGN:
                 break
             game = game.next()
         return game.game()
-    
+
     def acpl(self, max_eval: int = 1000) -> Dict[chess.Color, int]:
         """Calculate the average centipawn loss for each player.
 
@@ -76,7 +77,6 @@ class PGN:
             chess.WHITE: int(acpl[chess.WHITE][0] / acpl[chess.WHITE][1] * -1),
             chess.BLACK: int(acpl[chess.BLACK][0] / acpl[chess.BLACK][1] * -1)
         }
-
 
     def export(self) -> str:
         """Output the current PGN
