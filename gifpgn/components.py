@@ -63,8 +63,8 @@ class _Canvas(_Component):
         self._canvas.paste(board, (0, self.header_size))
 
     def add_headers(self, white: Image.Image, black: Image.Image) -> None:
-        self._canvas.paste(white, (0, 0 if self.reverse else self.header_size + self.board_size))
-        self._canvas.paste(black, (0, self.header_size + self.board_size if self.reverse else 0))
+        self._canvas.paste(white, (0, 0 if self.reverse else self.header_size + self.board_size), white)
+        self._canvas.paste(black, (0, self.header_size + self.board_size if self.reverse else 0), black)
 
     def add_bar(self, bar: Image.Image) -> None:
         self._canvas.paste(bar, (self.board_size, self.header_size))
@@ -156,6 +156,15 @@ class _Board(_Component):
         self._board_size = floor(bsize/8)*8
         self._sq_size = self._board_size // 8
         self._pieces = {}
+        self._square_images = {}
+
+    @property
+    def square_colors(self) -> Dict[chess.Color, str]:
+        return self._square_colors
+    
+    @square_colors.setter
+    def square_colors(self, colors) -> None:
+        self._square_colors = colors
         self._square_images = {}
 
     @property
