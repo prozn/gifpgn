@@ -4,7 +4,9 @@
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-   
+
    gifpgn
+   utils
    exceptions
+   components
    geometry
