@@ -9,8 +9,8 @@ gifpgn: Chess GIF Generator for Python
     :target: https://pypistats.org/packages/gifpgn
     :alt: Downloads
 
-.. image:: https://coveralls.io/repos/github/prozn/gifpgn/badge.svg
-    :target: https://coveralls.io/github/prozn/gifpgn
+.. image:: https://github.com/prozn/gifpgn/actions/workflows/run_tests.yml/badge.svg
+    :target: https://github.com/prozn/gifpgn/actions/workflows/run_tests.yml
     :alt: Coverage Status
 
 Introduction
