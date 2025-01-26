@@ -25,13 +25,13 @@ Generate a GIF of a chess game from a PGN with optional:
 * PGN module to add engine evaluations and calculate ACPL
 
 
-**Details on breaking changes in the 1.0.0 release**
+    **Details on breaking changes in the 1.0.0 release**
+    
+    This release brings new features such as headers with player names, taken pieces and clocks, and Numeric Annotation Glyphs (NAGs).
 
-This release brings new features such as headers with player names, taken pieces and clocks, and Numeric Annotation Glyphs (NAGs).
+    The module was also restructured for easier usage and extensibility. Code using version 0.2.0 and earlier will not work with version 1.0.0 - minor changes will be required to get back up and running again.
 
-The module was also restructured for easier usage and extensibility. Code using version 0.2.0 and earlier will not work with version 1.0.0 - minor changes will be required to get back up and running again.
-
-Please see the examples and documentation for details.
+    Please see the examples and documentation for details.
 
 
 Demo
