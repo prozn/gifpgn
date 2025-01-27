@@ -20,7 +20,7 @@ from .geometry import (
     shorten_line,
     line_intersection
 )
-from .utils import _eval
+from .utils import _eval, _font_size_approx
 
 
 class _Component():
@@ -395,7 +395,9 @@ class _EvalBar(_Component):
             eval_string_pos = self._height if self._reverse else 0
             eval_string_anchor = "md" if self._reverse else "ma"
 
-        font = ImageFont.truetype(BytesIO(pkgutil.get_data(__name__, "fonts/Carlito-Regular.ttf")), 10)
+        font = pkgutil.get_data(__name__, "fonts/Carlito-Regular.ttf")
+        font_size = _font_size_approx(eval_string, font, self._width, 0.75, 10)
+        font = ImageFont.truetype(BytesIO(font), font_size)
         draw.text((self._width/2, eval_string_pos), eval_string, font=font, fill=eval_string_color, anchor=eval_string_anchor)
 
     def _get_bar_position(self, evalu: chess.engine.Score) -> int:
