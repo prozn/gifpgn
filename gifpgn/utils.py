@@ -2,6 +2,9 @@ import chess
 import chess.pgn
 import chess.engine
 
+from io import BytesIO
+from PIL import ImageFont
+
 from .exceptions import MissingAnalysisError
 
 from typing import Dict, List
@@ -102,3 +105,21 @@ def _eval(game: chess.pgn.Game) -> chess.engine.PovScore:
         else:
             raise MissingAnalysisError
     return game.eval()
+
+
+def _font_size_approx(text: str, font_file: bytes, target_width: int, target_ratio: float, min_size: int) -> int:
+    """Get the approximate font size required to fit ``text`` inside ``target_width*target_ratio`` pixels width
+
+    This is only an approximate calculation as string lengths do not scale linearly with font size.
+
+    :param str text: String to be drawn
+    :param bytes font_file: Raw bites of a .ttf font file
+    :param int target_width: Width of the destination image
+    :param float target_ratio: Ratio to scale down text width by
+    :param int min_size: If calculated font size is less than min_size, return min_size
+    :return int: Approximate font size
+    """
+    font: ImageFont.FreeTypeFont = ImageFont.truetype(BytesIO(font_file), 100)
+    width = font.getbbox(text)[2]
+    approx_size = int(100 / (width / target_width) * target_ratio)
+    return max(min_size, approx_size)
