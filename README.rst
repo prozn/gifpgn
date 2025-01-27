@@ -63,6 +63,7 @@ GIF with all features enabled
     gif = g.generate("test_gif.gif")
 
 
+
 .. image:: https://i.imgur.com/hxQM0cl.gif
 
 
@@ -80,6 +81,7 @@ Small GIF with no analysis
     g = CreateGifFromPGN(game)
     g.board_size = 240
     g.generate("test_small_gif.gif")
+
 
 
 .. image:: https://i.imgur.com/HkT2K8k.gif
