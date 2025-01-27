@@ -67,7 +67,6 @@ class PGN:
             if game.parent is not None:
                 curr_eval = min(max_eval, _eval(game).pov(not game.turn()).score(mate_score=max_eval), key=abs)
                 prev_eval = min(max_eval, _eval(game.parent).pov(not game.turn()).score(mate_score=max_eval), key=abs)
-                print(f"{not game.turn()} : {prev_eval} -> {curr_eval}")
                 acpl[not game.turn()][0] += curr_eval - prev_eval
                 acpl[not game.turn()][1] += 1
             if game.next() is None:
