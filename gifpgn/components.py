@@ -330,18 +330,21 @@ class _Headers():
             )) + self._height
         num_takes = {chess.WHITE: 0, chess.BLACK: 0}
         for piece in captures:
+            alpha_img = Image.new('RGBA', (self._width, self._height))
             if piece.color == chess.WHITE:
-                blackbar.paste(
+                alpha_img.paste(
                     _Piece(piece, piece_size).image(),
                     (piece_offset+(piece_size*num_takes[chess.WHITE]), 1),
                     _Piece(piece, piece_size).image()
                 )
+                blackbar = Image.alpha_composite(blackbar, alpha_img)
             else:
-                whitebar.paste(
+                alpha_img.paste(
                     _Piece(piece, piece_size).image(),
                     (piece_offset+(piece_size*num_takes[chess.BLACK]), 1),
                     _Piece(piece, piece_size).image()
                 )
+                whitebar = Image.alpha_composite(whitebar, alpha_img)
             num_takes[piece.color] += 1
 
         return {
