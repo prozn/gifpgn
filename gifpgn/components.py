@@ -94,8 +94,8 @@ class _AssetImage:
         try:
             return self._images[imgname]
         except KeyError:
-            self._images[imgname] = \
-                Image.open(BytesIO(pkgutil.get_data(__name__, f"assets/{self._name}.png"))).resize((self._size, self._size))
+            img = Image.open(BytesIO(pkgutil.get_data(__name__, f"assets/{self._name}.png")))
+            self._images[imgname] = img.convert("RGBA").resize((self._size, self._size))
             return self._images[imgname]
 
 
@@ -105,9 +105,11 @@ class _Piece(_AssetImage):
 
     :param chess.Piece piece:
     :param int size: size in pixels to resize the image to
+    :param str theme: The piece theme to use, options are alpha, cases, maya, modern
     """
-    def __init__(self, piece: chess.Piece, size: int):
-        super().__init__(self.get_piece_string(piece), size)
+    def __init__(self, piece: chess.Piece, size: int, theme: Literal["alpha", "cases", "maya", "modern"] = "alpha"):
+        name = f"pieces/{theme}/{self.get_piece_string(piece)}"
+        super().__init__(name, size)
 
     def get_piece_string(self, piece: chess.Piece) -> str:
         """Returns the filename of the given piece
@@ -130,12 +132,14 @@ class _Board(_Component):
     :param bool reverse: Draws the board from the perspective of black if True, defaults to False
     :param Dict[chess.Color, str] square_colors: Colors of the white and black squares, defaults to
         {chess.WHITE: '#f0d9b5', chess.BLACK: '#b58863'}
+    :param str piece_theme: The piece theme to use, options are alpha, cases, maya, modern
     """
     def __init__(self,
                  size: int,
                  board: chess.Board,
                  reverse: bool = False,
-                 square_colors: Optional[Dict[chess.Color, str]] = None):
+                 square_colors: Optional[Dict[chess.Color, str]] = None,
+                 piece_theme: Literal["alpha", "cases", "maya", "modern"] = "alpha"):
         super().__init__()
         self.board_size = size
         self.reverse: bool = reverse
@@ -144,6 +148,7 @@ class _Board(_Component):
         else:
             self.square_colors = square_colors
 
+        self._piece_theme = piece_theme
         self._pieces: Dict[str, Image.Image] = {}
         self._square_images: Dict[chess.Color, Image.Image] = {}
         self._images: Dict[str, Image.Image] = {}
@@ -199,8 +204,11 @@ class _Board(_Component):
         crd = self.get_square_position(square)
         self._canvas.paste(self.get_square_image(square), crd, self.get_square_image(square))
         p = self.board.piece_at(square)
+        # _Piece(p, self._sq_size, self._piece_theme).image().save("test_piece.png", "png")
         if p is not None:
-            self._canvas.paste(_Piece(p, self._sq_size).image(), crd, _Piece(p, self._sq_size).image())
+            self._canvas.paste(
+                _Piece(p, self._sq_size, self._piece_theme).image(), crd, _Piece(p, self._sq_size, self._piece_theme).image()
+            )
 
     def get_square_position(self, square: chess.Square, center: bool = False) -> Coord:
         """Calculates the position of either the top left of center of the specified square
@@ -278,7 +286,7 @@ class _Board(_Component):
         x += int(self._sq_size*(0.75 if x < self._sq_size*7 else 0.5))
         y -= int(self._sq_size*(0.25 if y > 0 else 0))
 
-        nag_icon = _AssetImage(nag, int(self._sq_size/2)).image()
+        nag_icon = _AssetImage(f"nags/{nag}", int(self._sq_size/2)).image()
         self._canvas.paste(nag_icon, (x, y), nag_icon)
 
 

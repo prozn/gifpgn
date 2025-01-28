@@ -18,7 +18,7 @@ setup(
     python_requires='>=3.10',
     install_requires=['pillow==11.1.0', 'chess==1.11.1'],
     package_data={
-        'gifpgn': ['assets/*.png', 'fonts/*.ttf'],
+        'gifpgn': ['assets/pieces/*.png', 'assets/nags/*.png', 'fonts/*.ttf'],
     },
     classifiers=[
         "Development Status :: 5 - Production/Stable",
