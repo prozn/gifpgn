@@ -55,6 +55,7 @@ GIF with all features enabled
         with chess.engine.SimpleEngine.popen_uci("/path/to/stockfish") as engine:
             game = PGN(game).add_analysis(engine, chess.engine.Limit(depth=18))
     g = CreateGifFromPGN(game)
+    g.piece_theme = "alpha"
     g.enable_arrows()
     g.add_headers(height=20)
     g.add_analysis_bar()

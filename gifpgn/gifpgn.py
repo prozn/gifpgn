@@ -1,7 +1,7 @@
 from io import BytesIO
 from math import floor
 
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Literal
 
 import chess
 import chess.pgn
@@ -38,6 +38,7 @@ class CreateGifFromPGN:
         self._reverse: bool = False
         self._arrows: bool = False
         self._nag: bool = False
+        self.piece_theme = "alpha"
         self._bar_size: Optional[int] = None
         self._graph_size: Optional[int] = None
         self._header_size: Optional[int] = None
@@ -65,6 +66,18 @@ class CreateGifFromPGN:
     @square_colors.setter
     def square_colors(self, colors: Dict[chess.Color, str]):
         self._square_colors = colors
+
+    @property
+    def piece_theme(self) -> Literal["alpha", "cases", "maya", "modern"]:
+        """str: Chess piece theme to use. Options are alpha, cases, maya or modern."""
+        return self._piece_theme
+
+    @piece_theme.setter
+    def piece_theme(self, theme: Literal["alpha", "cases", "maya", "modern"]) -> None:
+        if theme in ["alpha", "cases", "maya", "modern"]:
+            self._piece_theme = theme
+        else:
+            raise ValueError(f'Invalid piece theme "{theme}", permitted options are "alpha", "cases", "maya" or "modern"')
 
     @property
     def frame_duration(self) -> float:
@@ -177,7 +190,7 @@ class CreateGifFromPGN:
         while True:
             board = game.board()
             frame = _Canvas(self.board_size, self._bar_size, self._graph_size, self._header_size, self._reverse)
-            board_img = _Board(self.board_size, board, self._reverse, self.square_colors)
+            board_img = _Board(self.board_size, board, self._reverse, self.square_colors, self.piece_theme)
 
             if game.move is not None and game.parent.board().is_capture(game.move):
                 if game.parent.board().is_en_passant(game.move):
