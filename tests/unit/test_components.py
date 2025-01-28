@@ -77,15 +77,15 @@ def test_add_graph(c):
 
 
 def test_asset_image():
-    a = _AssetImage("blunder", 20).image()
+    a = _AssetImage("nags/blunder", 20).image()
     assert a.size == (20, 20)
-    assert "blunder-20" in _AssetImage._images
+    assert "nags/blunder-20" in _AssetImage._images
 
 
 def test_piece_image():
-    p = _Piece(chess.Piece(chess.KNIGHT, chess.WHITE), 40).image()
+    p = _Piece(chess.Piece(chess.KNIGHT, chess.WHITE), 40, "maya").image()
     assert p.size == (40, 40)
-    assert "wn-40" in _AssetImage._images
+    assert "pieces/maya/wn-40" in _AssetImage._images
 
 
 # Test _Board
