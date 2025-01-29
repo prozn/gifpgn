@@ -2,6 +2,7 @@ import pytest
 
 from gifpgn import CreateGifFromPGN
 from gifpgn.exceptions import MissingAnalysisError
+from gifpgn._types import BoardTheme
 
 import chess.pgn
 from PIL import Image
@@ -66,14 +67,13 @@ def test_has_analysis(game, method, var, val):
     assert getattr(g, var) == val
 
 
-def test_square_colors(game):
-    g = game(PGN_NO_ANNOTATIONS)
-    assert isinstance(g.square_colors, dict)
-    for k, v in g.square_colors.items():
-        assert isinstance(k, chess.Color)
-        assert isinstance(v, str)
-    g.square_colors = {chess.WHITE: "white", chess.BLACK: "#000000"}
-    assert g.square_colors == {chess.WHITE: "white", chess.BLACK: "#000000"}
+def test_square_colors(game: CreateGifFromPGN):
+    g: CreateGifFromPGN = game(PGN_NO_ANNOTATIONS)
+    assert isinstance(g.square_colors, BoardTheme)
+    assert g.square_colors.square_color(chess.WHITE) == "#f0d9b5"
+    g.square_colors = BoardTheme("white", "#000000")
+    assert g.square_colors.square_color(chess.WHITE) == "white"
+    assert g.square_colors.square_color(chess.BLACK) == "#000000"
 
 
 def test_headers(game):

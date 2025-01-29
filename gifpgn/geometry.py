@@ -16,7 +16,7 @@ def rotate_around_point(point: Coord, radians: float, origin: Coord) -> Coord:
     ox, oy = origin
     qx = int(ox + cos(radians) * (x - ox) + sin(radians) * (y - oy))
     qy = int(oy + -sin(radians) * (x - ox) + cos(radians) * (y - oy))
-    return Coord((qx, qy))
+    return Coord(qx, qy)
 
 
 def angle_between_two_points(point1: Coord, point2: Coord) -> float:
@@ -47,7 +47,7 @@ def shorten_line(c1: Coord, c2: Coord, pix: int) -> Tuple[Coord, Coord]:
         dy /= length
     dx *= length-pix
     dy *= length-pix
-    return (c1, Coord((int(c1[0]+dx), int(c1[1]+dy))))
+    return (c1, Coord(int(c1[0]+dx), int(c1[1]+dy)))
 
 
 def line_intersection(line1: Tuple[Coord, Coord], line2: Tuple[Coord, Coord]) -> Optional[Coord]:
@@ -71,4 +71,4 @@ def line_intersection(line1: Tuple[Coord, Coord], line2: Tuple[Coord, Coord]) ->
     d = (det(*line1), det(*line2))
     x = det(d, xdiff) / div
     y = det(d, ydiff) / div
-    return Coord((x, y))
+    return Coord(x, y)

@@ -10,7 +10,7 @@ import chess.pgn
 import chess.engine
 from PIL import Image, ImageDraw, ImageFont
 
-from ._types import Coord
+from ._types import Coord, PieceTheme, BoardTheme
 from .exceptions import (
     MoveOutOfRangeError
 )
@@ -105,10 +105,10 @@ class _Piece(_AssetImage):
 
     :param chess.Piece piece:
     :param int size: size in pixels to resize the image to
-    :param str theme: The piece theme to use, options are alpha, cases, maya, modern
+    :param Piecetheme theme: Instance of gifpgn.PieceTheme
     """
-    def __init__(self, piece: chess.Piece, size: int, theme: Literal["alpha", "cases", "maya", "modern"] = "alpha"):
-        name = f"pieces/{theme}/{self.get_piece_string(piece)}"
+    def __init__(self, piece: chess.Piece, size: int, theme: PieceTheme = PieceTheme.ALPHA):
+        name = f"pieces/{theme.value}/{self.get_piece_string(piece)}"
         super().__init__(name, size)
 
     def get_piece_string(self, piece: chess.Piece) -> str:
@@ -130,23 +130,24 @@ class _Board(_Component):
     :param int size: Size of the board image in pixels
     :param chess.Board board: A board state
     :param bool reverse: Draws the board from the perspective of black if True, defaults to False
-    :param Dict[chess.Color, str] square_colors: Colors of the white and black squares, defaults to
-        {chess.WHITE: '#f0d9b5', chess.BLACK: '#b58863'}
-    :param str piece_theme: The piece theme to use, options are alpha, cases, maya, modern
+    :param BoardTheme square_colors: Colors of the white and black squares, instance of gifpgn.BoardTheme
+    :param PieceTheme piece_theme: The piece theme to use, instance of gifpgn.PieceTheme
     """
     def __init__(self,
                  size: int,
                  board: chess.Board,
                  reverse: bool = False,
-                 square_colors: Optional[Dict[chess.Color, str]] = None,
-                 piece_theme: Literal["alpha", "cases", "maya", "modern"] = "alpha"):
+                 square_colors: Optional[BoardTheme] = None,
+                 piece_theme: PieceTheme = PieceTheme.ALPHA):
         super().__init__()
         self.board_size = size
         self.reverse: bool = reverse
         if square_colors is None:
-            self.square_colors = {chess.WHITE: '#f0d9b5', chess.BLACK: '#b58863'}
-        else:
+            self.square_colors = BoardTheme()
+        elif isinstance(square_colors, BoardTheme):
             self.square_colors = square_colors
+        else:
+            raise ValueError(f"square_colors should be an instance of Boardtheme. Provided: {square_colors}")
 
         self._piece_theme = piece_theme
         self._pieces: Dict[str, Image.Image] = {}
@@ -170,13 +171,16 @@ class _Board(_Component):
         self._square_images = {}
 
     @property
-    def square_colors(self) -> Dict[chess.Color, str]:
+    def square_colors(self) -> BoardTheme:
         return self._square_colors
 
     @square_colors.setter
     def square_colors(self, colors) -> None:
-        self._square_colors = colors
-        self._square_images = {}
+        if isinstance(colors, BoardTheme):
+            self._square_colors = colors
+            self._square_images = {}
+        else:
+            raise ValueError(f"Colors should be an instance of BoardTheme. Provided: {type(colors)}")
 
     @property
     def board(self) -> chess.Board:
@@ -222,7 +226,7 @@ class _Board(_Component):
         column = abs(chess.square_file(square)-(7 if self.reverse else 0))
         x = int((column*self._sq_size) + (self._sq_size/2 if center else 0))
         y = int((row*self._sq_size) + (self._sq_size/2 if center else 0))
-        return Coord((x, y))
+        return Coord(x, y)
 
     def get_square_color(self, square: chess.Square) -> chess.Color:
         """Returns the color of the given square
@@ -242,7 +246,8 @@ class _Board(_Component):
         try:
             return self._square_images[color]
         except KeyError:
-            self._square_images[color] = Image.new('RGBA', (self._sq_size, self._sq_size), self.square_colors[color])
+            self._square_images[color] = \
+                Image.new('RGBA', (self._sq_size, self._sq_size), self.square_colors.square_color(color))
             return self._square_images[color]
 
     def draw_arrow(self, from_sqare: chess.Square, to_square: chess.Square,
@@ -266,12 +271,12 @@ class _Board(_Component):
         draw.line(shorten_line(from_crd, to_crd, int(self._sq_size/2)), fill=arrow[color], width=floor(self._sq_size/4))
 
         # draw arrow head
-        line_degrees = angle_between_two_points(Coord(from_crd), Coord(to_crd))
+        line_degrees = angle_between_two_points(Coord(*from_crd), Coord(*to_crd))
         x0, y0 = from_crd
         x1, y1 = to_crd
         c1 = to_crd
-        c2 = rotate_around_point(Coord((int(x1-self._sq_size/2), int(y1-self._sq_size/3))), line_degrees, Coord(c1))
-        c3 = rotate_around_point(Coord((int(x1-self._sq_size/2), int(y1+self._sq_size/3))), line_degrees, Coord(c1))
+        c2 = rotate_around_point(Coord(int(x1-self._sq_size/2), int(y1-self._sq_size/3)), line_degrees, Coord(*c1))
+        c3 = rotate_around_point(Coord(int(x1-self._sq_size/2), int(y1+self._sq_size/3)), line_degrees, Coord(*c1))
         draw.polygon([c1, c2, c3], fill=arrow[color])
 
         self._canvas = Image.alpha_composite(self._canvas, arrow_mask)
@@ -491,7 +496,7 @@ class _Graph:
         """
         x = (self._width/(self._game_root.end().ply()-self._game_root.ply()))*move
         y = -((evalu.score(mate_score=self._max_eval)-self._max_eval)*(self._height-1))/(2*self._max_eval)
-        return Coord((floor(x), floor(y)))
+        return Coord(floor(x), floor(y))
 
     def at_move(self, move_num: int) -> Image.Image:
         """Returns a copy of the analysis graph with a red dot drawn at the given move number

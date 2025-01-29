@@ -1,7 +1,7 @@
 from io import BytesIO
 from math import floor
 
-from typing import List, Dict, Optional, Literal
+from typing import List, Dict, Optional, Union
 
 import chess
 import chess.pgn
@@ -9,6 +9,7 @@ import chess.engine
 from PIL import Image
 
 from .exceptions import MissingAnalysisError
+from ._types import PieceTheme, BoardTheme, BoardThemes
 from .utils import PGN, _eval
 from .components import (
     _Board,
@@ -31,14 +32,14 @@ class CreateGifFromPGN:
             raise ValueError("Provided game does not have any moves.")
 
         self.board_size = 480
-        self.square_colors = {chess.WHITE: '#f0d9b5', chess.BLACK: '#b58863'}
+        self.square_colors = BoardThemes.BROWN
         self.frame_duration = 0.5
         self.max_eval = 1000
 
         self._reverse: bool = False
         self._arrows: bool = False
         self._nag: bool = False
-        self.piece_theme = "alpha"
+        self.piece_theme = PieceTheme.ALPHA
         self._bar_size: Optional[int] = None
         self._graph_size: Optional[int] = None
         self._header_size: Optional[int] = None
@@ -59,25 +60,44 @@ class CreateGifFromPGN:
         self._board_size = floor(bsize/8)*8
 
     @property
-    def square_colors(self) -> Dict[chess.Color, str]:
-        """Dict[chess.Color, str]: A dict mapping each `chess.Color` to a color format understandable by PIL"""
+    def square_colors(self) -> BoardTheme:
+        """BoardTheme: An instance of gifpgn.BoardTheme"""
         return self._square_colors
 
     @square_colors.setter
-    def square_colors(self, colors: Dict[chess.Color, str]):
-        self._square_colors = colors
+    def square_colors(self, colors: Union[BoardTheme, BoardThemes]):
+        """Set the square colors to a given BoardTheme or BoardThemes instance
+
+        Args:
+            colors (Union[BoardTheme, BoardThemes]): Use gifpgn.BoardThemes to select a built in theme,
+                or gifpgn.BoardTheme to define your own
+
+        Raises:
+            ValueError: Provided colors not valid, see error message.
+        """
+        if isinstance(colors, BoardTheme):
+            self._square_colors = colors
+        elif isinstance(colors, BoardThemes):
+            self._square_colors = BoardTheme(*colors.value)
+        elif isinstance(colors, Dict):  # for backwards compatability
+            if chess.WHITE in colors and chess.BLACK in colors:
+                self._square_colors = BoardTheme(white=colors[chess.WHITE], black=colors[chess.BLACK])
+            else:
+                raise ValueError("Provided Dict did not contain keys for chess.WHITE and chess.BLACK")
+        else:
+            raise ValueError(f"Colors should be an instance of BoardTheme. Provided: {type(colors)}")
 
     @property
-    def piece_theme(self) -> Literal["alpha", "cases", "maya", "modern"]:
-        """str: Chess piece theme to use. Options are alpha, cases, maya or modern."""
+    def piece_theme(self) -> PieceTheme:
+        """PieceTheme: Instance of gifpgn.PieceTheme"""
         return self._piece_theme
 
     @piece_theme.setter
-    def piece_theme(self, theme: Literal["alpha", "cases", "maya", "modern"]) -> None:
-        if theme in ["alpha", "cases", "maya", "modern"]:
+    def piece_theme(self, theme: PieceTheme) -> None:
+        if isinstance(theme, PieceTheme):
             self._piece_theme = theme
         else:
-            raise ValueError(f'Invalid piece theme "{theme}", permitted options are "alpha", "cases", "maya" or "modern"')
+            raise ValueError(f"Theme should be an instance of PieceTheme. Provided: {type(theme)}")
 
     @property
     def frame_duration(self) -> float:
