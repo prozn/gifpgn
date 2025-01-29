@@ -46,7 +46,7 @@ GIF with all features enabled
     import chess.engine
     import chess.pgn
     import io
-    from gifpgn import CreateGifFromPGN
+    from gifpgn import CreateGifFromPGN, PieceTheme
     from gifpgn.utils import PGN
 
     pgn_string = ...
@@ -55,7 +55,7 @@ GIF with all features enabled
         with chess.engine.SimpleEngine.popen_uci("/path/to/stockfish") as engine:
             game = PGN(game).add_analysis(engine, chess.engine.Limit(depth=18))
     g = CreateGifFromPGN(game)
-    g.piece_theme = "alpha"
+    g.piece_theme = PieceTheme.ALPHA
     g.enable_arrows()
     g.add_headers(height=20)
     g.add_analysis_bar()
@@ -75,17 +75,19 @@ Small GIF with no analysis
 
     import chess.pgn
     import io
-    from from gifpgn import CreateGifFromPGN
+    from from gifpgn import CreateGifFromPGN, PieceTheme, BoardThemes
 
     pgn_string = ...
     game = chess.pgn.read_game(io.StringIO(pgn_string))
     g = CreateGifFromPGN(game)
     g.board_size = 240
+    g.piece_theme = PieceTheme.CASES
+    g.square_colors = BoardThemes.BLUE
     g.generate("test_small_gif.gif")
 
 
 
-.. image:: https://i.imgur.com/HkT2K8k.gif
+.. image:: https://i.imgur.com/BCNkfO2.gif
 
 Installing
 ----------

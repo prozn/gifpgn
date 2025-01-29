@@ -10,7 +10,15 @@ class Coord(NamedTuple):
 
 
 class PieceTheme(Enum):
-    """Enum with valid piece themes"""
+    """Enum with valid piece themes
+
+    .. code-block:: python
+
+        game = chess.pgn.read_game(io.StringIO(pgn_string))
+        gif = CreateGifFromPGN(game)
+        gif.piece_theme = PieceTheme.CASES
+
+    """
     ALPHA = "alpha"
     """Alpha theme by Eric Bentzen, free for personal use."""
     CASES = "cases"
