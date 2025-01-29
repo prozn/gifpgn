@@ -432,13 +432,17 @@ class _Graph:
     :param chess.pgn.Game game: Game object containing an ``[%eval ...]`` annotated PGN
     :param Tuple[int, int] size: x,y size of the graph
     :param int max_eval: Limits the y axis to +/- the given number of centipawns
+    :param int line_width: Width of graph line (and x axis line) in pixels, defaults to 1
     """
-    def __init__(self, game: chess.pgn.Game, size: Tuple[int, int], max_eval: int):
+    def __init__(self, game: chess.pgn.Game, size: Tuple[int, int], max_eval: int, line_width: int = 1):
         self._game_root = game.game()
-        self._width, self._height = size
-        self._max_eval = max_eval
+        self._aa_factor = 4  # scale the graph by this factor, and scale back down in at_move to anti-alias
+        self._output_size = size
+        self._width, self._height = (size[0] * self._aa_factor, size[1] * self._aa_factor)
+        self._line_width: int = line_width * self._aa_factor
+        self._max_eval: int = max_eval
         self._eval_at_move: Dict[int, chess.engine.PovScore] = {}
-        self._background = self._draw_graph_background()
+        self._background: Image.Image = self._draw_graph_background()
 
     def _draw_graph_background(self) -> Image.Image:
         """Iterates through the game in `self._game_root` and draws a the analysis graph
@@ -472,10 +476,10 @@ class _Graph:
                 break
             game = game.next()
         points_list = [point for _, point in sorted(points.items())]
-        draw.line(points_list, fill='white', width=1)
+        draw.line(points_list, fill='white', width=self._line_width)
         x_axis_f = self._get_graph_position(chess.engine.Cp(0), 0)
         x_axis_t = self._get_graph_position(chess.engine.Cp(0), self._game_root.end().ply())
-        draw.line([x_axis_f, x_axis_t], fill="grey", width=1)
+        draw.line([x_axis_f, x_axis_t], fill="grey", width=self._line_width)
         return graph_image
 
     def _get_graph_position(self, evalu: chess.engine.Score, move: int) -> Coord:
@@ -501,5 +505,8 @@ class _Graph:
         graph_background = self._background.copy()
         x, y = self._get_graph_position(self._eval_at_move[move_num], move_num)
         draw = ImageDraw.Draw(graph_background)
-        draw.ellipse([(x-3, y-3), (x+3, y+3)], fill="red")
-        return graph_background
+        draw.ellipse([
+            (x-3-self._line_width, y-3-self._line_width),
+            (x+3+self._line_width, y+3+self._line_width)
+        ], fill="red")
+        return graph_background.resize(self._output_size, Image.Resampling.HAMMING)

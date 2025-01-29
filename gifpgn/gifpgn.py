@@ -115,7 +115,7 @@ class CreateGifFromPGN:
             raise MissingAnalysisError("PGN did not contain evaluations for every half move")
         self._bar_size = width
 
-    def add_analysis_graph(self, height: int = 81) -> None:
+    def add_analysis_graph(self, height: int = 81, line_width: int = 1) -> None:
         """Adds an analysis graph to the bottom of the chess board.
 
         .. note::
@@ -125,12 +125,14 @@ class CreateGifFromPGN:
             Alternatively the PGN can be decorated using the ``gifpgn.utils.PGN`` class.
 
         :param int height: Height of the analysis graph in pixels, defaults to 81
+        :param int line_width: Width of graph line (and x axis line) in pixels, defaults to 1
         :raises MissingAnalysisError: At least one ply in the PGN has a missing ``[%eval ...]`` annotation
         """
         # PGN needs to be decorated with evaluations for each half move
         if not PGN(self._game_root).has_analysis():
             raise MissingAnalysisError("PGN did not contain evaluations for every half move")
         self._graph_size = height
+        self._graph_line_width = line_width
 
     def enable_nags(self):
         """Enable numerical annoation glyphs
@@ -183,7 +185,8 @@ class CreateGifFromPGN:
             graph = _Graph(
                 self._game_root,
                 (self.board_size+(0 if self._bar_size is None else self._bar_size), self._graph_size),
-                self._max_eval
+                self._max_eval,
+                line_width=self._graph_line_width
             )
 
         game = self._game_root
