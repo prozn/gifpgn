@@ -1,6 +1,6 @@
 from io import BytesIO
 from math import floor
-import pkgutil
+from importlib.resources import files
 from datetime import timedelta
 
 from typing import List, Dict, Tuple, Optional, Literal
@@ -94,7 +94,8 @@ class _AssetImage:
         try:
             return self._images[imgname]
         except KeyError:
-            img = Image.open(BytesIO(pkgutil.get_data(__name__, f"assets/{self._name}.png")))
+            asset = files('gifpgn.assets').joinpath(f"{self._name}.png").read_bytes()
+            img = Image.open(BytesIO(asset))
             self._images[imgname] = img.convert("RGBA").resize((self._size, self._size))
             return self._images[imgname]
 
@@ -309,7 +310,10 @@ class _Headers():
         self._headers = self._draw_headers(captures)
 
     def _draw_headers(self, captures: List[chess.Piece]) -> Dict[chess.Color, Image.Image]:
-        font = ImageFont.truetype(BytesIO(pkgutil.get_data(__name__, "fonts/Carlito-Regular.ttf")), int(self._height*0.7))
+        font = ImageFont.truetype(
+            BytesIO(files("gifpgn.fonts").joinpath("Carlito-Regular.ttf").read_bytes()),
+            int(self._height*0.7)
+        )
 
         clock = {
             not self._game.turn(): self._game.clock(),
@@ -411,9 +415,8 @@ class _EvalBar(_Component):
             eval_string_pos = self._height if self._reverse else 0
             eval_string_anchor = "md" if self._reverse else "ma"
 
-        font = pkgutil.get_data(__name__, "fonts/Carlito-Regular.ttf")
-        font_size = _font_size_approx(eval_string, font, self._width, 0.75, 10)
-        font = ImageFont.truetype(BytesIO(font), font_size)
+        font = files("gifpgn.fonts").joinpath("Carlito-Regular.ttf").read_bytes()
+        font = ImageFont.truetype(BytesIO(font), _font_size_approx(eval_string, font, self._width, 0.75, 10))
         draw.text((self._width/2, eval_string_pos), eval_string, font=font, fill=eval_string_color, anchor=eval_string_anchor)
 
     def _get_bar_position(self, evalu: chess.engine.Score) -> int:
@@ -446,7 +449,7 @@ class _Graph:
         self._width, self._height = (size[0] * self._aa_factor, size[1] * self._aa_factor)
         self._line_width: int = line_width * self._aa_factor
         self._max_eval: int = max_eval
-        self._eval_at_move: Dict[int, chess.engine.PovScore] = {}
+        self._eval_at_move: Dict[int, chess.engine.Score] = {}
         self._background: Image.Image = self._draw_graph_background()
 
     def _draw_graph_background(self) -> Image.Image:
