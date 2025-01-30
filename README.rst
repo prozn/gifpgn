@@ -91,8 +91,8 @@ Small GIF with no analysis
 .. image:: https://github.com/prozn/gifpgn/blob/dev/docs/images/small_gif.gif?raw=true
 
 
-Piece and Board Board Themes
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Piece and Board Themes
+^^^^^^^^^^^^^^^^^^^^^^
 
 +---------+------------------------------------------------------------------------------------------------------+
 | Alpha   | .. image:: https://github.com/prozn/gifpgn/blob/dev/docs/images/alpha.png?raw=true                   |
