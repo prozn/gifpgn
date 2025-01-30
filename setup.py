@@ -13,6 +13,7 @@ setup(
     keywords="chess pgn uci analysis stockfish gif acpl",
     url='http://github.com/prozn/gifpgn',
     author='Matthew Hambly',
+    author_email='gifpgn@quickmind.co.uk',
     license='GPLv3+',
     packages=['gifpgn'],
     python_requires='>=3.10',
