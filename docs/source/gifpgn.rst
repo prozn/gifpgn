@@ -13,6 +13,27 @@ Main class used to generate a GIF. See :doc:`readme </index>` for usage.
    :members:
    :undoc-members:
 
+   +---------+------------------------------------------------------------------------------------------------------+
+   | Alpha   | .. image:: https://github.com/prozn/gifpgn/blob/dev/gifpgn/docs/images/alpha.png?raw=true            |
+   |         |     :height: 60                                                                                      |
+   | Blue    |     :width: 480                                                                                      |
+   |         |                                                                                                      |
+   +---------+------------------------------------------------------------------------------------------------------+
+   | Cases   | .. image:: https://github.com/prozn/gifpgn/blob/dev/gifpgn/docs/images/cases.png?raw=true            |
+   |         |     :height: 60                                                                                      |
+   | Green   |     :width: 480                                                                                      |
+   |         |                                                                                                      |
+   +---------+------------------------------------------------------------------------------------------------------+
+   | Maya    | .. image:: https://github.com/prozn/gifpgn/blob/dev/gifpgn/docs/images/maya.png?raw=true             |
+   |         |     :height: 60                                                                                      |
+   | Brown   |     :width: 480                                                                                      |
+   |         |                                                                                                      |
+   +---------+------------------------------------------------------------------------------------------------------+
+   | Regular | .. image:: https://github.com/prozn/gifpgn/blob/dev/gifpgn/docs/images/regular.png?raw=true          |
+   |         |     :height: 60                                                                                      |
+   | Purple  |     :width: 480                                                                                      |
+   |         |                                                                                                      |
+   +---------+------------------------------------------------------------------------------------------------------+
 
 .. autoclass:: gifpgn.BoardThemes
    :members:
