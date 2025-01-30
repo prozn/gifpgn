@@ -1,7 +1,7 @@
 from io import BytesIO
 from math import floor
 
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Union
 
 import chess
 import chess.pgn
@@ -9,6 +9,7 @@ import chess.engine
 from PIL import Image
 
 from .exceptions import MissingAnalysisError
+from ._types import PieceTheme, BoardTheme, BoardThemes
 from .utils import PGN, _eval
 from .components import (
     _Board,
@@ -31,13 +32,14 @@ class CreateGifFromPGN:
             raise ValueError("Provided game does not have any moves.")
 
         self.board_size = 480
-        self.square_colors = {chess.WHITE: '#f0d9b5', chess.BLACK: '#b58863'}
+        self.square_colors = BoardThemes.BROWN
         self.frame_duration = 0.5
         self.max_eval = 1000
 
         self._reverse: bool = False
         self._arrows: bool = False
         self._nag: bool = False
+        self.piece_theme = PieceTheme.ALPHA
         self._bar_size: Optional[int] = None
         self._graph_size: Optional[int] = None
         self._header_size: Optional[int] = None
@@ -58,13 +60,44 @@ class CreateGifFromPGN:
         self._board_size = floor(bsize/8)*8
 
     @property
-    def square_colors(self) -> Dict[chess.Color, str]:
-        """Dict[chess.Color, str]: A dict mapping each `chess.Color` to a color format understandable by PIL"""
+    def square_colors(self) -> BoardTheme:
+        """BoardTheme: An instance of gifpgn.BoardTheme"""
         return self._square_colors
 
     @square_colors.setter
-    def square_colors(self, colors: Dict[chess.Color, str]):
-        self._square_colors = colors
+    def square_colors(self, colors: Union[BoardTheme, BoardThemes]):
+        """Set the square colors to a given BoardTheme or BoardThemes instance
+
+        Args:
+            colors (Union[BoardTheme, BoardThemes]): Use gifpgn.BoardThemes to select a built in theme,
+                or gifpgn.BoardTheme to define your own
+
+        Raises:
+            ValueError: Provided colors not valid, see error message.
+        """
+        if isinstance(colors, BoardTheme):
+            self._square_colors = colors
+        elif isinstance(colors, BoardThemes):
+            self._square_colors = BoardTheme(*colors.value)
+        elif isinstance(colors, Dict):  # for backwards compatability
+            if chess.WHITE in colors and chess.BLACK in colors:
+                self._square_colors = BoardTheme(white=colors[chess.WHITE], black=colors[chess.BLACK])
+            else:
+                raise ValueError("Provided Dict did not contain keys for chess.WHITE and chess.BLACK")
+        else:
+            raise ValueError(f"Colors should be an instance of BoardTheme. Provided: {type(colors)}")
+
+    @property
+    def piece_theme(self) -> PieceTheme:
+        """PieceTheme: Instance of gifpgn.PieceTheme"""
+        return self._piece_theme
+
+    @piece_theme.setter
+    def piece_theme(self, theme: PieceTheme) -> None:
+        if isinstance(theme, PieceTheme):
+            self._piece_theme = theme
+        else:
+            raise ValueError(f"Theme should be an instance of PieceTheme. Provided: {type(theme)}")
 
     @property
     def frame_duration(self) -> float:
@@ -102,7 +135,7 @@ class CreateGifFromPGN:
             raise MissingAnalysisError("PGN did not contain evaluations for every half move")
         self._bar_size = width
 
-    def add_analysis_graph(self, height: int = 81) -> None:
+    def add_analysis_graph(self, height: int = 81, line_width: int = 1) -> None:
         """Adds an analysis graph to the bottom of the chess board.
 
         .. note::
@@ -112,12 +145,14 @@ class CreateGifFromPGN:
             Alternatively the PGN can be decorated using the ``gifpgn.utils.PGN`` class.
 
         :param int height: Height of the analysis graph in pixels, defaults to 81
+        :param int line_width: Width of graph line (and x axis line) in pixels, defaults to 1
         :raises MissingAnalysisError: At least one ply in the PGN has a missing ``[%eval ...]`` annotation
         """
         # PGN needs to be decorated with evaluations for each half move
         if not PGN(self._game_root).has_analysis():
             raise MissingAnalysisError("PGN did not contain evaluations for every half move")
         self._graph_size = height
+        self._graph_line_width = line_width
 
     def enable_nags(self):
         """Enable numerical annoation glyphs
@@ -170,14 +205,15 @@ class CreateGifFromPGN:
             graph = _Graph(
                 self._game_root,
                 (self.board_size+(0 if self._bar_size is None else self._bar_size), self._graph_size),
-                self._max_eval
+                self.max_eval,
+                line_width=self._graph_line_width
             )
 
         game = self._game_root
         while True:
             board = game.board()
             frame = _Canvas(self.board_size, self._bar_size, self._graph_size, self._header_size, self._reverse)
-            board_img = _Board(self.board_size, board, self._reverse, self.square_colors)
+            board_img = _Board(self.board_size, board, self._reverse, self.square_colors, self.piece_theme)
 
             if game.move is not None and game.parent.board().is_capture(game.move):
                 if game.parent.board().is_en_passant(game.move):
@@ -211,7 +247,7 @@ class CreateGifFromPGN:
                     _EvalBar(
                         (self._bar_size, self.board_size),
                         _eval(game).white(),
-                        self._max_eval,
+                        self.max_eval,
                         self._reverse
                     ).image()
                 )

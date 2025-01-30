@@ -9,6 +9,7 @@ from gifpgn.components import (
     _AssetImage,
     _Piece
 )
+from gifpgn._types import PieceTheme, BoardTheme
 
 import chess.pgn
 from PIL import Image
@@ -77,15 +78,15 @@ def test_add_graph(c):
 
 
 def test_asset_image():
-    a = _AssetImage("blunder", 20).image()
+    a = _AssetImage("nags/blunder", 20).image()
     assert a.size == (20, 20)
-    assert "blunder-20" in _AssetImage._images
+    assert "nags/blunder-20" in _AssetImage._images
 
 
 def test_piece_image():
-    p = _Piece(chess.Piece(chess.KNIGHT, chess.WHITE), 40).image()
+    p = _Piece(chess.Piece(chess.KNIGHT, chess.WHITE), 40, PieceTheme.MAYA).image()
     assert p.size == (40, 40)
-    assert "wn-40" in _AssetImage._images
+    assert "pieces/maya/wn-40" in _AssetImage._images
 
 
 # Test _Board
@@ -104,10 +105,7 @@ def board(chess_board: chess.Board) -> _Board:
         480,
         chess_board(PGN_NO_ANNOTATIONS),
         False,
-        {
-            chess.WHITE: "#ff0000",
-            chess.BLACK: "#00ff00"
-        }
+        BoardTheme(white="#ff0000", black="#00ff00")
     )
 
 
@@ -118,6 +116,16 @@ def test_board(board: _Board):
     assert len(board._square_images.keys()) == 2
     assert board._square_images[chess.WHITE].getpixel((30, 30)) == (255, 0, 0, 255)
     assert board._square_images[chess.BLACK].getpixel((30, 30)) == (0, 255, 0, 255)
+
+
+def test_default_square_color(chess_board):
+    board = _Board(480, chess_board(PGN_NO_ANNOTATIONS))
+    assert board.square_colors == BoardTheme(white='#f0d9b5', black='#b58863')
+
+
+def test_draw_squares(board: _Board):
+    board.draw_squares()
+    assert board._canvas.getpixel(board.get_square_position(chess.H8)) == (0, 255, 0, 255)
 
 
 def test_draw_square(board: _Board):
@@ -149,7 +157,7 @@ def test_get_square_image(board: _Board):
 
 def test_draw_arrow(board: _Board):
     board.board_size = 240
-    board.square_colors = {chess.WHITE: "#000000", chess.BLACK: "#000000"}
+    board.square_colors = BoardTheme(white="#000000", black="#000000")
     board.draw_board()
     board.draw_arrow(chess.A1, chess.H8, "red")
     assert board._canvas.getpixel((120, 120))[0] > 0
@@ -162,7 +170,7 @@ def test_draw_arrow(board: _Board):
 
 
 def test_draw_nag(board: _Board):
-    board.square_colors = {chess.WHITE: "#000000", chess.BLACK: "#000000"}
+    board.square_colors = BoardTheme(white="#000000", black="#000000")
     board.draw_board()
     assert board._canvas.getpixel((239, 239)) == (0, 0, 0, 255)
     board.draw_nag("blunder", chess.D4)

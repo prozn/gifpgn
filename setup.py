@@ -6,19 +6,20 @@ README = (HERE / "README.rst").read_text()
 
 setup(
     name='gifpgn',
-    version='1.0.0',
+    version='1.1.0',
     description='Chess GIF Generator for Python',
     long_description=README,
     long_description_content_type="text/x-rst",
     keywords="chess pgn uci analysis stockfish gif acpl",
     url='http://github.com/prozn/gifpgn',
     author='Matthew Hambly',
+    author_email='gifpgn@quickmind.co.uk',
     license='GPLv3+',
     packages=['gifpgn'],
     python_requires='>=3.10',
     install_requires=['pillow==11.1.0', 'chess==1.11.1'],
     package_data={
-        'gifpgn': ['assets/*.png', 'fonts/*.ttf'],
+        'gifpgn': ['assets/pieces/*/*.png', 'assets/nags/*.png', 'fonts/*.ttf'],
     },
     classifiers=[
         "Development Status :: 5 - Production/Stable",

@@ -46,15 +46,17 @@ GIF with all features enabled
     import chess.engine
     import chess.pgn
     import io
-    from gifpgn import CreateGifFromPGN
+    from gifpgn import CreateGifFromPGN, PieceTheme, BoardThemes
     from gifpgn.utils import PGN
 
     pgn_string = ...
     game = chess.pgn.read_game(io.StringIO(pgn_string))
     if not PGN(game).has_analysis():
-        with chess.engine.SimpleEngine.popen_uci("/path/to/stockfish") as engine:
+        with chess.engine.SimpleEngine.popen_uci("/home/matt/Coding/ChessBot/lib/stockfish-ubuntu-x86-64-avx2") as engine:
             game = PGN(game).add_analysis(engine, chess.engine.Limit(depth=18))
     g = CreateGifFromPGN(game)
+    g.piece_theme = PieceTheme.ALPHA
+    g.square_colors = BoardThemes.BLUE
     g.enable_arrows()
     g.add_headers(height=20)
     g.add_analysis_bar()
@@ -64,7 +66,7 @@ GIF with all features enabled
 
 
 
-.. image:: https://i.imgur.com/hxQM0cl.gif
+.. image:: https://github.com/prozn/gifpgn/blob/dev/docs/images/all_features.gif?raw=true
 
 
 Small GIF with no analysis
@@ -74,17 +76,46 @@ Small GIF with no analysis
 
     import chess.pgn
     import io
-    from from gifpgn import CreateGifFromPGN
+    from from gifpgn import CreateGifFromPGN, PieceTheme, BoardThemes
 
     pgn_string = ...
     game = chess.pgn.read_game(io.StringIO(pgn_string))
     g = CreateGifFromPGN(game)
     g.board_size = 240
+    g.piece_theme = PieceTheme.CASES
+    g.square_colors = BoardThemes.GREEN
     g.generate("test_small_gif.gif")
 
 
 
-.. image:: https://i.imgur.com/HkT2K8k.gif
+.. image:: https://github.com/prozn/gifpgn/blob/dev/docs/images/small_gif.gif?raw=true
+
+
+Piece and Board Themes
+^^^^^^^^^^^^^^^^^^^^^^
+
++---------+------------------------------------------------------------------------------------------------------+
+| Alpha   | .. image:: https://github.com/prozn/gifpgn/blob/dev/docs/images/alpha.png?raw=true                   |
+|         |     :height: 60                                                                                      |
+| Blue    |     :width: 480                                                                                      |
+|         |                                                                                                      |
++---------+------------------------------------------------------------------------------------------------------+
+| Cases   | .. image:: https://github.com/prozn/gifpgn/blob/dev/docs/images/cases.png?raw=true                   |
+|         |     :height: 60                                                                                      |
+| Green   |     :width: 480                                                                                      |
+|         |                                                                                                      |
++---------+------------------------------------------------------------------------------------------------------+
+| Maya    | .. image:: https://github.com/prozn/gifpgn/blob/dev/docs/images/maya.png?raw=true                    |
+|         |     :height: 60                                                                                      |
+| Brown   |     :width: 480                                                                                      |
+|         |                                                                                                      |
++---------+------------------------------------------------------------------------------------------------------+
+| Regular | .. image:: https://github.com/prozn/gifpgn/blob/dev/docs/images/regular.png?raw=true                 |
+|         |     :height: 60                                                                                      |
+| Purple  |     :width: 480                                                                                      |
+|         |                                                                                                      |
++---------+------------------------------------------------------------------------------------------------------+
+
 
 Installing
 ----------
