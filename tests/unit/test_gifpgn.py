@@ -2,7 +2,7 @@ import pytest
 
 from gifpgn import CreateGifFromPGN
 from gifpgn.exceptions import MissingAnalysisError
-from gifpgn._types import BoardTheme
+from gifpgn._types import BoardTheme, PieceTheme
 
 import chess.pgn
 from PIL import Image
@@ -52,7 +52,7 @@ def test_missing_analysis(game, method):
     g = game(PGN_NO_ANNOTATIONS)
     with pytest.raises(MissingAnalysisError) as e:
         getattr(g, method)()
-    assert str(e.value) == "PGN did not contain evaluations for every half move"
+        assert str(e.value) == "PGN did not contain evaluations for every half move"
 
 
 @pytest.mark.parametrize(
@@ -74,6 +74,21 @@ def test_square_colors(game: CreateGifFromPGN):
     g.square_colors = BoardTheme("white", "#000000")
     assert g.square_colors.square_color(chess.WHITE) == "white"
     assert g.square_colors.square_color(chess.BLACK) == "#000000"
+    g.square_colors = {chess.WHITE: "#FF0000", chess.BLACK: "#00FF00"}
+    assert g.square_colors.square_color(chess.WHITE) == "#FF0000"
+    assert g.square_colors.square_color(chess.BLACK) == "#00FF00"
+    with pytest.raises(ValueError):
+        g.square_colors = {chess.WHITE: "#FF0000", "BLACK": "#00FF00"}
+    with pytest.raises(ValueError):
+        g.square_colors = []
+
+
+def test_piece_theme(game: CreateGifFromPGN):
+    g: CreateGifFromPGN = game(PGN_NO_ANNOTATIONS)
+    g.piece_theme = PieceTheme.CASES
+    assert g.piece_theme.value == "cases"
+    with pytest.raises(ValueError):
+        g.piece_theme = "cases"
 
 
 def test_headers(game):
@@ -116,3 +131,12 @@ def test_generate(game):
     with Image.open(gif).convert("RGBA") as frame:
         assert frame.size == (240, 290)
         assert frame.getpixel((120, 270)) == (0, 0, 0, 255)
+
+
+def test_generate_with_eval(game):
+    g: CreateGifFromPGN = game(PGN_EVAL_ANNOTATIONS)
+    g.board_size = 400
+    g.add_analysis_graph(60, 2)
+    gif = g.generate()
+    with Image.open(gif).convert("RGBA") as frame:
+        assert frame.size == (400, 460)

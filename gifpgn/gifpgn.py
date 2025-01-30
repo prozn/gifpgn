@@ -205,7 +205,7 @@ class CreateGifFromPGN:
             graph = _Graph(
                 self._game_root,
                 (self.board_size+(0 if self._bar_size is None else self._bar_size), self._graph_size),
-                self._max_eval,
+                self.max_eval,
                 line_width=self._graph_line_width
             )
 
@@ -247,7 +247,7 @@ class CreateGifFromPGN:
                     _EvalBar(
                         (self._bar_size, self.board_size),
                         _eval(game).white(),
-                        self._max_eval,
+                        self.max_eval,
                         self._reverse
                     ).image()
                 )

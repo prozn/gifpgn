@@ -484,7 +484,7 @@ class _Graph:
         draw.line(points_list, fill='white', width=self._line_width)
         x_axis_f = self._get_graph_position(chess.engine.Cp(0), 0)
         x_axis_t = self._get_graph_position(chess.engine.Cp(0), self._game_root.end().ply())
-        draw.line([x_axis_f, x_axis_t], fill="grey", width=self._line_width)
+        draw.line([x_axis_f, x_axis_t], fill="#7d7d7d", width=self._line_width)
         return graph_image
 
     def _get_graph_position(self, evalu: chess.engine.Score, move: int) -> Coord:

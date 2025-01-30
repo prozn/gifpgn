@@ -33,3 +33,5 @@ docs/build
 
 # Other dev files
 test_chess.py
+
+.DS_Store
