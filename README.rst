@@ -11,7 +11,7 @@ gifpgn: Chess GIF Generator for Python
 
 .. image:: https://github.com/prozn/gifpgn/actions/workflows/run_tests.yml/badge.svg
     :target: https://github.com/prozn/gifpgn/actions/workflows/run_tests.yml
-    :alt: Coverage Status
+    :alt: Tests Status
 
 Introduction
 ------------
@@ -66,7 +66,9 @@ GIF with all features enabled
 
 
 
-.. image:: https://github.com/prozn/gifpgn/blob/dev/docs/images/all_features.gif?raw=true
+.. image:: https://github.com/prozn/gifpgn/blob/master/docs/images/all_features.gif?raw=true
+    :height: 601
+    :width: 510
 
 
 Small GIF with no analysis
@@ -88,29 +90,31 @@ Small GIF with no analysis
 
 
 
-.. image:: https://github.com/prozn/gifpgn/blob/dev/docs/images/small_gif.gif?raw=true
+.. image:: https://github.com/prozn/gifpgn/blob/master/docs/images/small_gif.gif?raw=true
+    :height: 240
+    :width: 240
 
 
 Piece and Board Themes
 ^^^^^^^^^^^^^^^^^^^^^^
 
 +---------+------------------------------------------------------------------------------------------------------+
-| Alpha   | .. image:: https://github.com/prozn/gifpgn/blob/dev/docs/images/alpha.png?raw=true                   |
+| Alpha   | .. image:: https://github.com/prozn/gifpgn/blob/master/docs/images/alpha.png?raw=true                |
 |         |     :height: 60                                                                                      |
 | Blue    |     :width: 480                                                                                      |
 |         |                                                                                                      |
 +---------+------------------------------------------------------------------------------------------------------+
-| Cases   | .. image:: https://github.com/prozn/gifpgn/blob/dev/docs/images/cases.png?raw=true                   |
+| Cases   | .. image:: https://github.com/prozn/gifpgn/blob/master/docs/images/cases.png?raw=true                |
 |         |     :height: 60                                                                                      |
 | Green   |     :width: 480                                                                                      |
 |         |                                                                                                      |
 +---------+------------------------------------------------------------------------------------------------------+
-| Maya    | .. image:: https://github.com/prozn/gifpgn/blob/dev/docs/images/maya.png?raw=true                    |
+| Maya    | .. image:: https://github.com/prozn/gifpgn/blob/master/docs/images/maya.png?raw=true                 |
 |         |     :height: 60                                                                                      |
 | Brown   |     :width: 480                                                                                      |
 |         |                                                                                                      |
 +---------+------------------------------------------------------------------------------------------------------+
-| Regular | .. image:: https://github.com/prozn/gifpgn/blob/dev/docs/images/regular.png?raw=true                 |
+| Regular | .. image:: https://github.com/prozn/gifpgn/blob/master/docs/images/regular.png?raw=true              |
 |         |     :height: 60                                                                                      |
 | Purple  |     :width: 480                                                                                      |
 |         |                                                                                                      |
