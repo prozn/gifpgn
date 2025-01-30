@@ -14,22 +14,22 @@ Main class used to generate a GIF. See :doc:`readme </index>` for usage.
    :undoc-members:
 
    +---------+------------------------------------------------------------------------------------------------------+
-   | Alpha   | .. image:: https://github.com/prozn/gifpgn/blob/dev/gifpgn/docs/images/alpha.png?raw=true            |
+   | Alpha   | .. image:: https://github.com/prozn/gifpgn/blob/dev/docs/images/alpha.png?raw=true                   |
    |         |     :height: 60                                                                                      |
    | Blue    |     :width: 480                                                                                      |
    |         |                                                                                                      |
    +---------+------------------------------------------------------------------------------------------------------+
-   | Cases   | .. image:: https://github.com/prozn/gifpgn/blob/dev/gifpgn/docs/images/cases.png?raw=true            |
+   | Cases   | .. image:: https://github.com/prozn/gifpgn/blob/dev/docs/images/cases.png?raw=true                   |
    |         |     :height: 60                                                                                      |
    | Green   |     :width: 480                                                                                      |
    |         |                                                                                                      |
    +---------+------------------------------------------------------------------------------------------------------+
-   | Maya    | .. image:: https://github.com/prozn/gifpgn/blob/dev/gifpgn/docs/images/maya.png?raw=true             |
+   | Maya    | .. image:: https://github.com/prozn/gifpgn/blob/dev/docs/images/maya.png?raw=true                    |
    |         |     :height: 60                                                                                      |
    | Brown   |     :width: 480                                                                                      |
    |         |                                                                                                      |
    +---------+------------------------------------------------------------------------------------------------------+
-   | Regular | .. image:: https://github.com/prozn/gifpgn/blob/dev/gifpgn/docs/images/regular.png?raw=true          |
+   | Regular | .. image:: https://github.com/prozn/gifpgn/blob/dev/docs/images/regular.png?raw=true                 |
    |         |     :height: 60                                                                                      |
    | Purple  |     :width: 480                                                                                      |
    |         |                                                                                                      |
