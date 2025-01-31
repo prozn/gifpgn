@@ -52,7 +52,7 @@ GIF with all features enabled
     pgn_string = ...
     game = chess.pgn.read_game(io.StringIO(pgn_string))
     if not PGN(game).has_analysis():
-        with chess.engine.SimpleEngine.popen_uci("/home/matt/Coding/ChessBot/lib/stockfish-ubuntu-x86-64-avx2") as engine:
+        with chess.engine.SimpleEngine.popen_uci("/path/to/stockfish") as engine:
             game = PGN(game).add_analysis(engine, chess.engine.Limit(depth=18))
     g = CreateGifFromPGN(game)
     g.piece_theme = PieceTheme.ALPHA
