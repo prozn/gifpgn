@@ -185,7 +185,7 @@ class CreateGifFromPGN:
         """Enables move and check arrows"""
         self._arrows = True
 
-    def generate(self, output_file: Optional[str] = None) -> Optional[BytesIO]:
+    def generate(self, output_file: Optional[str] = None) -> Optional[BytesIO]:  # noqa: C901
         """Generate the GIF and either save it to the specified file path or return the
         raw bytes if no file path is specified.
 
@@ -196,7 +196,8 @@ class CreateGifFromPGN:
             gif.generate("/path/to/output.gif")
 
         :param Optional[str] output_file: Filepath to save to, defaults to None
-        :return Optional[BytesIO]: Raw bytes of the generated GIF if ``output_file`` parameter is set, else returns ``None``
+        :return Optional[BytesIO]: Raw bytes of the generated GIF if ``output_file`` parameter is set,
+            else returns ``None``
         """
         captures: List[chess.Piece] = []
         frames: List[Image.Image] = []

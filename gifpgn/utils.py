@@ -46,7 +46,7 @@ class PGN:
         game = self._game_root
         while True:
             info = engine.analyse(game.board(), engine_limit)
-            game.set_eval(info['score'], info['depth'])
+            game.set_eval(info["score"], info["depth"])
             if game.next() is None:
                 break
             game = game.next()
