@@ -71,6 +71,7 @@ exclude = [
     ".vscode",
     "build",
     "dist",
+    "docs",
 ]
 
 line-length = 120

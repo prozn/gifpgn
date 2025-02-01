@@ -37,23 +37,23 @@ def test_canvas_size(c):
 
 def test_canvas_headers(c):
     c.add_headers(
-        white=Image.new('RGBA', (c.size()[0], 20), "#0000ff"),
-        black=Image.new('RGBA', (c.size()[0], 20), "#00ff00")
+        white=Image.new("RGBA", (c.size()[0], 20), "#0000ff"),
+        black=Image.new("RGBA", (c.size()[0], 20), "#00ff00")
     )
     assert c._canvas.getpixel((240, 5)) == (0, 255, 0, 255)
     assert c._canvas.getpixel((240, 495)) == (0, 0, 255, 255)
 
     c = _Canvas(480, 20, 50, 10, True)
     c.add_headers(
-        white=Image.new('RGBA', (c.size()[0], 20), "#0000ff"),
-        black=Image.new('RGBA', (c.size()[0], 20), "#00ff00")
+        white=Image.new("RGBA", (c.size()[0], 20), "#0000ff"),
+        black=Image.new("RGBA", (c.size()[0], 20), "#00ff00")
     )
     assert c._canvas.getpixel((240, 495)) == (0, 255, 0, 255)
     assert c._canvas.getpixel((240, 5)) == (0, 0, 255, 255)
 
 
 def test_add_board(c):
-    c.add_board(Image.new('RGBA', (480, 480), "#00ffff"))
+    c.add_board(Image.new("RGBA", (480, 480), "#00ffff"))
     assert c._canvas.getpixel((0, 9)) == (255, 0, 0, 255)
     assert c._canvas.getpixel((0, 10)) == (0, 255, 255, 255)
     assert c._canvas.getpixel((479, 245)) == (0, 255, 255, 255)
@@ -61,14 +61,14 @@ def test_add_board(c):
 
 
 def test_add_bar(c):
-    c.add_bar(Image.new('RGBA', (20, 480), "#00ffff"))
+    c.add_bar(Image.new("RGBA", (20, 480), "#00ffff"))
     assert c._canvas.getpixel((480, 9)) == (255, 0, 0, 255)
     assert c._canvas.getpixel((480, 10)) == (0, 255, 255, 255)
     assert c._canvas.getpixel((479, 10)) == (255, 0, 0, 255)
 
 
 def test_add_graph(c):
-    c.add_graph(Image.new('RGBA', (c.size()[0], 50), "#00ffff"))
+    c.add_graph(Image.new("RGBA", (c.size()[0], 50), "#00ffff"))
     assert c._canvas.getpixel((0, 499)) == (255, 0, 0, 255)
     assert c._canvas.getpixel((0, 500)) == (0, 255, 255, 255)
     assert c._canvas.getpixel((499, 500)) == (0, 255, 255, 255)
@@ -120,7 +120,7 @@ def test_board(board: _Board):
 
 def test_default_square_color(chess_board):
     board = _Board(480, chess_board(PGN_NO_ANNOTATIONS))
-    assert board.square_colors == BoardTheme(white='#f0d9b5', black='#b58863')
+    assert board.square_colors == BoardTheme(white="#f0d9b5", black="#b58863")
 
 
 def test_draw_squares(board: _Board):
@@ -129,7 +129,7 @@ def test_draw_squares(board: _Board):
 
 
 def test_draw_square(board: _Board):
-    board._canvas = Image.new('RGBA', (480, 480), "#0000ff")
+    board._canvas = Image.new("RGBA", (480, 480), "#0000ff")
     board.draw_square(chess.A3)
     assert board._canvas.getpixel((30, 330)) == (0, 255, 0, 255)
     board.draw_square(chess.D5)
