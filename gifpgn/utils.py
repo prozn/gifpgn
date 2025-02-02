@@ -82,8 +82,8 @@ class PGN:
                 break
             game = game.next()
         return {
-            chess.WHITE: int(acpl[chess.WHITE][0] / acpl[chess.WHITE][1] * -1),
-            chess.BLACK: int(acpl[chess.BLACK][0] / acpl[chess.BLACK][1] * -1)
+            chess.WHITE: int(acpl[chess.WHITE][0] / acpl[chess.WHITE][1] * -1) if acpl[chess.WHITE][1] > 0 else 0,
+            chess.BLACK: int(acpl[chess.BLACK][0] / acpl[chess.BLACK][1] * -1) if acpl[chess.BLACK][1] > 0 else 0
         }
 
     def export(self) -> str:
