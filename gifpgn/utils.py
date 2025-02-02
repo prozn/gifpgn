@@ -16,6 +16,12 @@ class PGN:
     :param chess.pgn.Game pgn: An instance of ``chess.pgn.Game`` containing the PGN for analysis
     """
     def __init__(self, pgn: chess.pgn.Game):
+        if pgn is None:
+            raise ValueError("Provided game is not valid/empty")
+
+        if pgn.end().ply() - pgn.ply() < 1:
+            raise ValueError("Provided game does not have any moves.")
+        
         self._game_root = pgn
 
     def has_analysis(self) -> bool:

@@ -288,7 +288,3 @@ class CreateGifFromPGN:
         if output_file is None:
             target.seek(0)
             return target
-
-    def _output_image(self, image: Image.Image, name: str = "output.png"):  # dump an image for bug testing
-        print("Saving image")
-        image.save(name, format="PNG")

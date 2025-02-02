@@ -14,8 +14,8 @@ def rotate_around_point(point: Coord, radians: float, origin: Coord) -> Coord:
     """
     x, y = point
     ox, oy = origin
-    qx = int(ox + cos(radians) * (x - ox) + sin(radians) * (y - oy))
-    qy = int(oy + -sin(radians) * (x - ox) + cos(radians) * (y - oy))
+    qx = int(ox + cos(radians) * (x - ox) + sin(radians) * (y - oy) + 1e-14)
+    qy = int(oy + -sin(radians) * (x - ox) + cos(radians) * (y - oy) + 1e-14)
     return Coord(qx, qy)
 
 
@@ -24,7 +24,7 @@ def angle_between_two_points(point1: Coord, point2: Coord) -> float:
 
     :param Coord point1:
     :param Coord point2:
-    :return float:
+    :return float: Radians
     """
     x0, y0 = point1
     x1, y1 = point2
@@ -51,7 +51,7 @@ def shorten_line(c1: Coord, c2: Coord, pix: int) -> Tuple[Coord, Coord]:
 
 
 def line_intersection(line1: Tuple[Coord, Coord], line2: Tuple[Coord, Coord]) -> Optional[Coord]:
-    """Returns the intersection point of two line, or None if no intersection
+    """Returns the intersection point of two lines of infinite length, or None if no intersection
 
     :param Tuple[Coord, Coord] line1:
     :param Tuple[Coord, Coord] line2:

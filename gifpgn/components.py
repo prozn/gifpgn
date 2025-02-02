@@ -145,13 +145,10 @@ class _Board(_Component):
         self.reverse: bool = reverse
         if square_colors is None:
             self.square_colors = BoardTheme()
-        elif isinstance(square_colors, BoardTheme):
-            self.square_colors = square_colors
         else:
-            raise ValueError(f"square_colors should be an instance of Boardtheme. Provided: {square_colors}")
+            self.square_colors = square_colors
 
         self._piece_theme = piece_theme
-        self._pieces: Dict[str, Image.Image] = {}
         self._square_images: Dict[chess.Color, Image.Image] = {}
         self._images: Dict[str, Image.Image] = {}
 
@@ -168,7 +165,6 @@ class _Board(_Component):
     def board_size(self, bsize: int):
         self._board_size = floor(bsize/8)*8
         self._sq_size = self._board_size // 8
-        self._pieces = {}
         self._square_images = {}
 
     @property
@@ -181,7 +177,7 @@ class _Board(_Component):
             self._square_colors = colors
             self._square_images = {}
         else:
-            raise ValueError(f"Colors should be an instance of BoardTheme. Provided: {type(colors)}")
+            raise ValueError(f"square_colors should be an instance of BoardTheme. Provided: {type(colors)}")
 
     @property
     def board(self) -> chess.Board:
@@ -398,29 +394,17 @@ class _EvalBar(_Component):
     def _draw_eval_bar(self, evalu: chess.engine.Score) -> None:
         self._canvas = Image.new("RGBA", (self._width, self._height), "black")
         draw = ImageDraw.Draw(self._canvas)
+
         if self._reverse:
             draw.rectangle([(0, 0), (self._width, self._get_bar_position(evalu))], fill="white")
         else:
             draw.rectangle([(0, self._get_bar_position(evalu)), (self._width, self._height)], fill="white")
 
-        if evalu.mate() is None:
-            eval_string = "{0:+.{1}f}".format(round(float(evalu.score())/100, 1), 1)
-        else:
-            eval_string = f"M{abs(evalu.mate())}"
-
-        if evalu.score(mate_score=self._max_eval) > 0:
-            eval_string_color = "black"
-            eval_string_pos = 0 if self._reverse else self._height
-            eval_string_anchor = "ma" if self._reverse else "md"
-        else:
-            eval_string_color = "white"
-            eval_string_pos = self._height if self._reverse else 0
-            eval_string_anchor = "md" if self._reverse else "ma"
-
+        eval_string = self._get_bar_text(evalu)
         font = files("gifpgn.fonts").joinpath("Carlito-Regular.ttf").read_bytes()
-        font = ImageFont.truetype(BytesIO(font), _font_size_approx(eval_string, font, self._width, 0.75, 10))
-        draw.text((self._width/2, eval_string_pos), eval_string, font=font, fill=eval_string_color,
-                  anchor=eval_string_anchor)
+        font = ImageFont.truetype(BytesIO(font), _font_size_approx(eval_string["text"], font, self._width, 0.75, 10))
+        draw.text((self._width/2, eval_string["pos"]), eval_string["text"], font=font, fill=eval_string["color"],
+                  anchor=eval_string["anchor"])
 
     def _get_bar_position(self, evalu: chess.engine.Score) -> int:
         """Returns the y coordinate on the evaluation bar for a given evaluation
@@ -428,11 +412,37 @@ class _EvalBar(_Component):
         :param chess.engine.Score evalu:
         :return int:
         """
-        max_eval = self._max_eval + (0 if evalu.mate() is None else abs(evalu.mate()))
-        y = ((evalu.score(mate_score=max_eval)/max_eval)+1)*(self._height/2)
+        max_eval = self._max_eval
+        bounded_eval = evalu.score(mate_score=max_eval) + (0 if evalu.mate() is None else evalu.mate())
+        if abs(bounded_eval) > max_eval:
+            bounded_eval = max_eval if bounded_eval >= 0 else -max_eval
+        y = ((bounded_eval/max_eval)+1)*(self._height/2)
         if not self._reverse:
             y = self._height - y
         return floor(y)
+    
+    def _get_bar_text(self, evalu: chess.engine.Score) -> Dict:
+        eval_string: Dict = {
+            "text": "",
+            "color": "",
+            "pos": None,
+            "anchor": ""
+        }
+        if evalu.mate() is None:
+            eval_string["text"] = "{0:+.{1}f}".format(round(float(evalu.score())/100, 1), 1)
+        else:
+            eval_string["text"] = f"M{abs(evalu.mate())}"
+
+        if evalu.score(mate_score=self._max_eval) > 0:
+            eval_string["color"] = "black"
+            eval_string["pos"] = 0 if self._reverse else self._height
+            eval_string["anchor"] = "ma" if self._reverse else "md"
+        else:
+            eval_string["color"] = "white"
+            eval_string["pos"] = self._height if self._reverse else 0
+            eval_string["anchor"] = "md" if self._reverse else "ma"
+
+        return eval_string
 
 
 class _Graph:
@@ -500,8 +510,11 @@ class _Graph:
         :param int move:
         :return Coord: Coordinates on the evaluation graph
         """
+        bounded_eval = evalu.score(mate_score=self._max_eval) + (0 if evalu.mate() is None else evalu.mate())
+        if abs(bounded_eval) > self._max_eval:
+            bounded_eval = self._max_eval if bounded_eval >= 0 else -self._max_eval
         x = (self._width/(self._game_root.end().ply()-self._game_root.ply()))*move
-        y = -((evalu.score(mate_score=self._max_eval)-self._max_eval)*(self._height-1))/(2*self._max_eval)
+        y = -((bounded_eval-self._max_eval)*(self._height-1))/(2*self._max_eval)
         return Coord(floor(x), floor(y))
 
     def at_move(self, move_num: int) -> Image.Image:

@@ -54,7 +54,7 @@ readme = {file = "README.rst", content-type = "text/x-rst"}
 # UV Configuration
 
 [dependency-groups]
-dev = ["pytest"]
+dev = ["pytest", "coverage"]
 docs = ["sphinx", "sphinx-rtd-theme", "sphinxcontrib-jquery"]
 
 

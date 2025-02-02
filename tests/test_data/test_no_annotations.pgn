@@ -11,4 +11,18 @@
 [BlackElo "?"]
 [PlyCount "7"]
 
-1.e3 e5 2.Qh5 Nc6 3.Bc4 Nf6 4.Qxf7# 1-0
+1.e3 e5 2.Qh5 Nc6 3.Bc4 Nf6 4.Qxf7# 1-0
+
+
+[Event "Test en passant and check"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "?"]
+[Black "?"]
+[Result "*"]
+[WhiteELO "?"]
+[BlackELO "?"]
+
+1. e4 Nf6 2. e5 d5 3. exd6 cxd6 4. Bb5+ Bd7 5. c4 Bxb5 6. cxb5 1-0
+
