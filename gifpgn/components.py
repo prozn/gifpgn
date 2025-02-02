@@ -483,8 +483,8 @@ class _Graph:
             if game.parent is not None:
                 zprev = self._get_graph_position(chess.engine.Cp(0), move_num-1)
                 znew = self._get_graph_position(chess.engine.Cp(0), move_num)
-                if evalu * prev_evalu < 0:  # eval symbols different => crossing the zero line
-                    zinter = line_intersection((points[move_num-1], points[move_num]), (zprev, znew))
+                zinter = line_intersection((points[move_num-1], points[move_num]), (zprev, znew))
+                if evalu * prev_evalu < 0 and zinter is not None:  # eval symbols different => crossing the zero line
                     draw.polygon([zprev, points[move_num-1], zinter], fill="#514f4c" if prev_evalu < 0 else "#7f7e7c")
                     draw.polygon([zinter, points[move_num], znew], fill="#514f4c" if evalu < 0 else "#7f7e7c")
                 else:
