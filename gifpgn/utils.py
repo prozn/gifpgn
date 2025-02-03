@@ -16,6 +16,12 @@ class PGN:
     :param chess.pgn.Game pgn: An instance of ``chess.pgn.Game`` containing the PGN for analysis
     """
     def __init__(self, pgn: chess.pgn.Game):
+        if pgn is None:
+            raise ValueError("Provided game is not valid/empty")
+
+        if pgn.end().ply() - pgn.ply() < 1:
+            raise ValueError("Provided game does not have any moves.")
+        
         self._game_root = pgn
 
     def has_analysis(self) -> bool:
@@ -46,7 +52,7 @@ class PGN:
         game = self._game_root
         while True:
             info = engine.analyse(game.board(), engine_limit)
-            game.set_eval(info['score'], info['depth'])
+            game.set_eval(info["score"], info["depth"])
             if game.next() is None:
                 break
             game = game.next()
@@ -76,8 +82,8 @@ class PGN:
                 break
             game = game.next()
         return {
-            chess.WHITE: int(acpl[chess.WHITE][0] / acpl[chess.WHITE][1] * -1),
-            chess.BLACK: int(acpl[chess.BLACK][0] / acpl[chess.BLACK][1] * -1)
+            chess.WHITE: int(acpl[chess.WHITE][0] / acpl[chess.WHITE][1] * -1) if acpl[chess.WHITE][1] > 0 else 0,
+            chess.BLACK: int(acpl[chess.BLACK][0] / acpl[chess.BLACK][1] * -1) if acpl[chess.BLACK][1] > 0 else 0
         }
 
     def export(self) -> str:

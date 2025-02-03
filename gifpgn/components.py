@@ -47,7 +47,7 @@ class _Canvas(_Component):
         self.graph_size: int = 0 if analysis_graph is None else analysis_graph
         self.header_size: int = 0 if headers is None else headers
         self.reverse = reverse
-        self._canvas = Image.new('RGBA', self.size(), "red")
+        self._canvas = Image.new("RGBA", self.size(), "red")
 
     def size(self) -> Tuple[int, int]:
         """Calculates the full canvas size
@@ -94,7 +94,7 @@ class _AssetImage:
         try:
             return self._images[imgname]
         except KeyError:
-            asset = files('gifpgn.assets').joinpath(f"{self._name}.png").read_bytes()
+            asset = files("gifpgn.assets").joinpath(f"{self._name}.png").read_bytes()
             img = Image.open(BytesIO(asset))
             self._images[imgname] = img.convert("RGBA").resize((self._size, self._size))
             return self._images[imgname]
@@ -145,13 +145,10 @@ class _Board(_Component):
         self.reverse: bool = reverse
         if square_colors is None:
             self.square_colors = BoardTheme()
-        elif isinstance(square_colors, BoardTheme):
-            self.square_colors = square_colors
         else:
-            raise ValueError(f"square_colors should be an instance of Boardtheme. Provided: {square_colors}")
+            self.square_colors = square_colors
 
         self._piece_theme = piece_theme
-        self._pieces: Dict[str, Image.Image] = {}
         self._square_images: Dict[chess.Color, Image.Image] = {}
         self._images: Dict[str, Image.Image] = {}
 
@@ -168,7 +165,6 @@ class _Board(_Component):
     def board_size(self, bsize: int):
         self._board_size = floor(bsize/8)*8
         self._sq_size = self._board_size // 8
-        self._pieces = {}
         self._square_images = {}
 
     @property
@@ -181,7 +177,7 @@ class _Board(_Component):
             self._square_colors = colors
             self._square_images = {}
         else:
-            raise ValueError(f"Colors should be an instance of BoardTheme. Provided: {type(colors)}")
+            raise ValueError(f"square_colors should be an instance of BoardTheme. Provided: {type(colors)}")
 
     @property
     def board(self) -> chess.Board:
@@ -194,7 +190,7 @@ class _Board(_Component):
 
     def draw_board(self) -> None:
         "Draws the full board"
-        self._canvas = Image.new('RGBA', (self.board_size, self.board_size))
+        self._canvas = Image.new("RGBA", (self.board_size, self.board_size))
         self.draw_squares(list(chess.SQUARES))
 
     def draw_squares(self, squares: Optional[List[chess.Square]] = None) -> None:
@@ -212,7 +208,8 @@ class _Board(_Component):
         # _Piece(p, self._sq_size, self._piece_theme).image().save("test_piece.png", "png")
         if p is not None:
             self._canvas.paste(
-                _Piece(p, self._sq_size, self._piece_theme).image(), crd, _Piece(p, self._sq_size, self._piece_theme).image()
+                _Piece(p, self._sq_size, self._piece_theme).image(), crd,
+                _Piece(p, self._sq_size, self._piece_theme).image()
             )
 
     def get_square_position(self, square: chess.Square, center: bool = False) -> Coord:
@@ -248,7 +245,7 @@ class _Board(_Component):
             return self._square_images[color]
         except KeyError:
             self._square_images[color] = \
-                Image.new('RGBA', (self._sq_size, self._sq_size), self.square_colors.square_color(color))
+                Image.new("RGBA", (self._sq_size, self._sq_size), self.square_colors.square_color(color))
             return self._square_images[color]
 
     def draw_arrow(self, from_sqare: chess.Square, to_square: chess.Square,
@@ -259,11 +256,11 @@ class _Board(_Component):
         :param chess.Square to_square:
         :param str color: Arrow color. Options are "red", "green", or "blue". Defaults to "green"
         """
-        arrow_mask = Image.new('RGBA', self._canvas.size)
+        arrow_mask = Image.new("RGBA", self._canvas.size)
         arrow = {
-            'green': (0, 255, 0, 100),
-            'blue':  (0, 0, 255, 100),
-            'red':   (255, 0, 0, 100)
+            "green": (0, 255, 0, 100),
+            "blue":  (0, 0, 255, 100),
+            "red":   (255, 0, 0, 100)
         }
         from_crd = self.get_square_position(from_sqare, center=True)
         to_crd = self.get_square_position(to_square, center=True)
@@ -320,9 +317,9 @@ class _Headers():
             self._game.turn(): None if self._game.move is None else self._game.parent.clock()
         }
 
-        whitebar = Image.new('RGBA', (self._width, self._height), "white")
+        whitebar = Image.new("RGBA", (self._width, self._height), "white")
         draw = ImageDraw.Draw(whitebar)
-        draw.text((3, self._height/2), self._game_root.headers['White'], font=font, fill="black", anchor="lm")
+        draw.text((3, self._height/2), self._game_root.headers["White"], font=font, fill="black", anchor="lm")
         if clock[chess.WHITE] is not None:
             draw.text(
                 (self._width-3, self._height/2),
@@ -330,9 +327,9 @@ class _Headers():
                 font=font, fill="black", anchor="rm"
             )
 
-        blackbar = Image.new('RGBA', (self._width, self._height), "black")
+        blackbar = Image.new("RGBA", (self._width, self._height), "black")
         draw = ImageDraw.Draw(blackbar)
-        draw.text((3, self._height/2), self._game_root.headers['Black'], font=font, fill="white", anchor="lm")
+        draw.text((3, self._height/2), self._game_root.headers["Black"], font=font, fill="white", anchor="lm")
         if clock[chess.BLACK] is not None:
             draw.text(
                 (self._width-3, self._height/2),
@@ -342,12 +339,12 @@ class _Headers():
 
         piece_size = self._height-2
         piece_offset = int(max(
-            draw.textlength(self._game_root.headers['White'], font),
-            draw.textlength(self._game_root.headers['Black'], font)
+            draw.textlength(self._game_root.headers["White"], font),
+            draw.textlength(self._game_root.headers["Black"], font)
             )) + self._height
         num_takes = {chess.WHITE: 0, chess.BLACK: 0}
         for piece in captures:
-            alpha_img = Image.new('RGBA', (self._width, self._height))
+            alpha_img = Image.new("RGBA", (self._width, self._height))
             if piece.color == chess.WHITE:
                 alpha_img.paste(
                     _Piece(piece, piece_size).image(),
@@ -384,7 +381,8 @@ class _EvalBar(_Component):
 
         :param Tuple[int, int] size: x,y size of the evaluation bar
         :param chess.engine.Score evalu: The evaluation to be displayed on the bar
-        :param int max_eval: The range in centipawns to display on the analysis bar. Larger evaluations will be truncated.
+        :param int max_eval: The range in centipawns to display on the analysis bar.
+            Larger evaluations will be truncated.
         :param bool reverse: If True bar will be drawn from black's perspective
         """
         super().__init__()
@@ -394,30 +392,19 @@ class _EvalBar(_Component):
         self._draw_eval_bar(evalu)
 
     def _draw_eval_bar(self, evalu: chess.engine.Score) -> None:
-        self._canvas = Image.new('RGBA', (self._width, self._height), "black")
+        self._canvas = Image.new("RGBA", (self._width, self._height), "black")
         draw = ImageDraw.Draw(self._canvas)
+
         if self._reverse:
             draw.rectangle([(0, 0), (self._width, self._get_bar_position(evalu))], fill="white")
         else:
             draw.rectangle([(0, self._get_bar_position(evalu)), (self._width, self._height)], fill="white")
 
-        if evalu.mate() is None:
-            eval_string = '{0:+.{1}f}'.format(round(float(evalu.score())/100, 1), 1)
-        else:
-            eval_string = f"M{abs(evalu.mate())}"
-
-        if evalu.score(mate_score=self._max_eval) > 0:
-            eval_string_color = "black"
-            eval_string_pos = 0 if self._reverse else self._height
-            eval_string_anchor = "ma" if self._reverse else "md"
-        else:
-            eval_string_color = "white"
-            eval_string_pos = self._height if self._reverse else 0
-            eval_string_anchor = "md" if self._reverse else "ma"
-
+        eval_string = self._get_bar_text(evalu)
         font = files("gifpgn.fonts").joinpath("Carlito-Regular.ttf").read_bytes()
-        font = ImageFont.truetype(BytesIO(font), _font_size_approx(eval_string, font, self._width, 0.75, 10))
-        draw.text((self._width/2, eval_string_pos), eval_string, font=font, fill=eval_string_color, anchor=eval_string_anchor)
+        font = ImageFont.truetype(BytesIO(font), _font_size_approx(eval_string["text"], font, self._width, 0.75, 10))
+        draw.text((self._width/2, eval_string["pos"]), eval_string["text"], font=font, fill=eval_string["color"],
+                  anchor=eval_string["anchor"])
 
     def _get_bar_position(self, evalu: chess.engine.Score) -> int:
         """Returns the y coordinate on the evaluation bar for a given evaluation
@@ -425,11 +412,37 @@ class _EvalBar(_Component):
         :param chess.engine.Score evalu:
         :return int:
         """
-        max_eval = self._max_eval + (0 if evalu.mate() is None else abs(evalu.mate()))
-        y = ((evalu.score(mate_score=max_eval)/max_eval)+1)*(self._height/2)
+        max_eval = self._max_eval
+        bounded_eval = evalu.score(mate_score=max_eval) + (0 if evalu.mate() is None else evalu.mate())
+        if abs(bounded_eval) > max_eval:
+            bounded_eval = max_eval if bounded_eval >= 0 else -max_eval
+        y = ((bounded_eval/max_eval)+1)*(self._height/2)
         if not self._reverse:
             y = self._height - y
         return floor(y)
+    
+    def _get_bar_text(self, evalu: chess.engine.Score) -> Dict:
+        eval_string: Dict = {
+            "text": "",
+            "color": "",
+            "pos": None,
+            "anchor": ""
+        }
+        if evalu.mate() is None:
+            eval_string["text"] = "{0:+.{1}f}".format(round(float(evalu.score())/100, 1), 1)
+        else:
+            eval_string["text"] = f"M{abs(evalu.mate())}"
+
+        if evalu.score(mate_score=self._max_eval) > 0:
+            eval_string["color"] = "black"
+            eval_string["pos"] = 0 if self._reverse else self._height
+            eval_string["anchor"] = "ma" if self._reverse else "md"
+        else:
+            eval_string["color"] = "white"
+            eval_string["pos"] = self._height if self._reverse else 0
+            eval_string["anchor"] = "md" if self._reverse else "ma"
+
+        return eval_string
 
 
 class _Graph:
@@ -458,7 +471,7 @@ class _Graph:
         :return Image.Image: PIL Image object containing the graph
         """
         points = {}
-        graph_image = Image.new('RGBA', (self._width, self._height), 'black')
+        graph_image = Image.new("RGBA", (self._width, self._height), "black")
         draw = ImageDraw.Draw(graph_image)
         game = self._game_root
         while True:
@@ -470,8 +483,8 @@ class _Graph:
             if game.parent is not None:
                 zprev = self._get_graph_position(chess.engine.Cp(0), move_num-1)
                 znew = self._get_graph_position(chess.engine.Cp(0), move_num)
-                if evalu * prev_evalu < 0:  # eval symbols different => crossing the zero line
-                    zinter = line_intersection((points[move_num-1], points[move_num]), (zprev, znew))
+                zinter = line_intersection((points[move_num-1], points[move_num]), (zprev, znew))
+                if evalu * prev_evalu < 0 and zinter is not None:  # eval symbols different => crossing the zero line
                     draw.polygon([zprev, points[move_num-1], zinter], fill="#514f4c" if prev_evalu < 0 else "#7f7e7c")
                     draw.polygon([zinter, points[move_num], znew], fill="#514f4c" if evalu < 0 else "#7f7e7c")
                 else:
@@ -484,7 +497,7 @@ class _Graph:
                 break
             game = game.next()
         points_list = [point for _, point in sorted(points.items())]
-        draw.line(points_list, fill='white', width=self._line_width)
+        draw.line(points_list, fill="white", width=self._line_width)
         x_axis_f = self._get_graph_position(chess.engine.Cp(0), 0)
         x_axis_t = self._get_graph_position(chess.engine.Cp(0), self._game_root.end().ply())
         draw.line([x_axis_f, x_axis_t], fill="#7d7d7d", width=self._line_width)
@@ -497,8 +510,11 @@ class _Graph:
         :param int move:
         :return Coord: Coordinates on the evaluation graph
         """
+        bounded_eval = evalu.score(mate_score=self._max_eval) + (0 if evalu.mate() is None else evalu.mate())
+        if abs(bounded_eval) > self._max_eval:
+            bounded_eval = self._max_eval if bounded_eval >= 0 else -self._max_eval
         x = (self._width/(self._game_root.end().ply()-self._game_root.ply()))*move
-        y = -((evalu.score(mate_score=self._max_eval)-self._max_eval)*(self._height-1))/(2*self._max_eval)
+        y = -((bounded_eval-self._max_eval)*(self._height-1))/(2*self._max_eval)
         return Coord(floor(x), floor(y))
 
     def at_move(self, move_num: int) -> Image.Image:

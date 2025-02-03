@@ -28,10 +28,15 @@ pip-delete-this-directory.txt
 # Docs
 docs/build
 
+# VS Code
+.vscode/
+
 # Tests
 .pytest_cache
 
 # Other dev files
+.venv/
 test_chess.py
 
+# Trash
 .DS_Store

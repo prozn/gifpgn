@@ -1,0 +1,92 @@
+# Build Configuration
+
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gifpgn"
+dynamic = ["version", "readme"]
+description = "Chess GIF Generator for Python"
+keywords = ["chess", "pgn", "uci", "analysis", "stockfish", "gif", "acpl"]
+authors = [
+    { name = "Matthew Hambly", email = "gifpgn@quickmind.co.uk" }
+]
+license = { text = "GPL-3.0-or-later" }
+requires-python = ">=3.10"
+dependencies = [
+    "pillow==11.1.0",
+    "chess==1.11.1"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Typing :: Typed",
+    "Topic :: Games/Entertainment :: Board Games",
+    "Topic :: Games/Entertainment :: Real Time Strategy",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12"
+]
+
+[project.urls]
+Homepage = "http://github.com/prozn/gifpgn"
+Documentation = "http://gifpgn.readthedocs.io"
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = ["tests*", "docs*"]
+
+[tool.setuptools.package-data]
+"gifpgn" = ["assets/pieces/*/*.png", "assets/nags/*.png", "fonts/*.ttf"]
+
+[tool.setuptools.dynamic]
+version = {attr = "gifpgn.__version__"}
+readme = {file = "README.rst", content-type = "text/x-rst"}
+
+
+# UV Configuration
+
+[dependency-groups]
+dev = ["pytest", "coverage"]
+docs = ["sphinx", "sphinx-rtd-theme", "sphinxcontrib-jquery"]
+
+
+
+# Ruff Configuration
+
+[tool.ruff]
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".git",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    ".vscode",
+    "build",
+    "dist",
+    "docs",
+]
+
+line-length = 120
+indent-width = 4
+
+[tool.ruff.lint]
+select = ["E", "F", "C", "N", "Q", "B"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+docstring-code-format = false
+
+# Ignore `E402` (import violations) in all `__init__.py` files, and in selected subdirectories.
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["E402"]
+"**/{tests,docs}/*" = ["E402"]
