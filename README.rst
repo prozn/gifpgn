@@ -5,6 +5,10 @@ gifpgn: Chess GIF Generator for Python
     :target: https://pypi.org/project/gifpgn/
     :alt: PyPI
 
+.. image:: https://readthedocs.org/projects/gifpgn/badge/?version=stable&style=flat
+    :target: https://gifpgn.readthedocs.io
+    :alt: Docs
+
 .. image:: https://img.shields.io/pypi/dm/gifpgn
     :target: https://pypistats.org/packages/gifpgn
     :alt: Downloads
