@@ -74,8 +74,10 @@ class PGN:
         game = self._game_root
         while True:
             if game.parent is not None:
-                curr_eval = min(max_eval, _eval(game).pov(not game.turn()).score(mate_score=max_eval), key=abs)
-                prev_eval = min(max_eval, _eval(game.parent).pov(not game.turn()).score(mate_score=max_eval), key=abs)
+                curr_eval = _eval(game).pov(not game.turn()).score(mate_score=max_eval)
+                curr_eval = min(max_eval * (-1 if curr_eval < 0 else 1), curr_eval, key=abs)
+                prev_eval = _eval(game.parent).pov(not game.turn()).score(mate_score=max_eval)
+                prev_eval = min(max_eval * (-1 if prev_eval < 0 else 1), prev_eval, key=abs)
                 acpl[not game.turn()][0] += curr_eval - prev_eval
                 acpl[not game.turn()][1] += 1
             if game.next() is None:
