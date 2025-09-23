@@ -2,6 +2,7 @@ from typing import NamedTuple
 from enum import Enum
 from dataclasses import dataclass
 import chess
+from chess.engine import InfoDict
 
 
 class Coord(NamedTuple):
@@ -63,3 +64,15 @@ class BoardThemes(Enum):
     PURPLE = ("#f0f1f0", "#8476ba")
     RED = ("#f5dbc3", "#bb5746")
     LIGHT_BLUE = ("#f0f1f0", "#c4d8e4")
+
+
+class AnalysisStats(InfoDict):
+    """A dictionary of engine information from (`chess.engine.InfoDict`) extended with the following keys
+
+    :ivar int move_number: The index of the move currently being analyzed.
+    :ivar int total_moves: The total number of moves in the game.
+    :ivar float percent_complete: Fraction of the analysis completed (from 0.0 to 1.0).
+    """
+    movenumber: int
+    totalmoves: int
+    percentcomplete: float

@@ -28,7 +28,9 @@ class CreateGifFromPGN:
         if game is None:
             raise ValueError("Provided game is not valid/empty")
 
-        if game.end().ply() - game.ply() < 1:
+        self._game_root: chess.pgn.Game = game.game()
+
+        if self._game_root.end().ply() - self._game_root.ply() < 1:
             raise ValueError("Provided game does not have any moves.")
 
         self.board_size = 480
@@ -43,7 +45,6 @@ class CreateGifFromPGN:
         self._bar_size: Optional[int] = None
         self._graph_size: Optional[int] = None
         self._header_size: Optional[int] = None
-        self._game_root: chess.pgn.Game = game
         self._start_color: chess.Color = self._game_root.turn()
 
     @property

@@ -6,8 +6,9 @@ from io import BytesIO
 from PIL import ImageFont
 
 from .exceptions import MissingAnalysisError
+from ._types import AnalysisStats
 
-from typing import Dict, List
+from typing import Callable, Dict, List, Awaitable, Optional
 
 
 class PGN:
@@ -21,7 +22,7 @@ class PGN:
 
         if pgn.end().ply() - pgn.ply() < 1:
             raise ValueError("Provided game does not have any moves.")
-        
+
         self._game_root = pgn
 
     def has_analysis(self) -> bool:
@@ -53,6 +54,45 @@ class PGN:
         while True:
             info = engine.analyse(game.board(), engine_limit)
             game.set_eval(info["score"], info["depth"])
+            if game.next() is None:
+                break
+            game = game.next()
+        return game.game()
+
+    async def add_analysis_async(
+            self,
+            engine: chess.engine.Protocol,
+            engine_limit: chess.engine.Limit,
+            update_callback: Optional[Callable[[AnalysisStats], Awaitable[None]]] = None
+    ) -> chess.pgn.Game:
+        """Asynchronously calculates and adds ``[%eval ...]`` annotations to each half move in the PGN
+
+        :param chess.engine.SimpleEngine engine: Instance of
+            `chess.engine.SimpleEngine <https://python-chess.readthedocs.io/en/latest/engine.html>`_ from python-chess
+        :param chess.engine.Limit engine_limit: Instance of
+            `chess.engine.Limit <https://python-chess.readthedocs.io/en/latest/engine.html#chess.engine.Limit>`_
+            from python-chess
+        :param Optional[Callable[[AnalysisStats], Awaitable[None]]] update_callback: Optional async callback function to
+            receive updates during analysis. The function should accept a `gifpgn.AnalysisStats` typed dictionary.
+        """
+        game = self._game_root
+        total_moves = game.end().ply() - game.ply()
+        move_number = 0
+        while True:
+            info: chess.engine.InfoDict = await engine.analyse(game.board(), engine_limit)
+
+            if update_callback:
+                move_number += 1
+                stats: AnalysisStats = info.copy()
+                stats.update({
+                    "movenumber": move_number,
+                    "totalmoves": total_moves,
+                    "percentcomplete": move_number / total_moves,
+                })
+                await update_callback(stats)
+
+            game.set_eval(info["score"], info["depth"])
+
             if game.next() is None:
                 break
             game = game.next()
