@@ -16,6 +16,7 @@ class PGN:
 
     :param chess.pgn.Game pgn: An instance of ``chess.pgn.Game`` containing the PGN for analysis
     """
+
     def __init__(self, pgn: chess.pgn.Game):
         if pgn is None:
             raise ValueError("Provided game is not valid/empty")
@@ -60,10 +61,10 @@ class PGN:
         return game.game()
 
     async def add_analysis_async(
-            self,
-            engine: chess.engine.Protocol,
-            engine_limit: chess.engine.Limit,
-            update_callback: Optional[Callable[[AnalysisStats], Awaitable[None]]] = None
+        self,
+        engine: chess.engine.Protocol,
+        engine_limit: chess.engine.Limit,
+        update_callback: Optional[Callable[[AnalysisStats], Awaitable[None]]] = None,
     ) -> chess.pgn.Game:
         """Asynchronously calculates and adds ``[%eval ...]`` annotations to each half move in the PGN
 
@@ -84,11 +85,13 @@ class PGN:
             if update_callback:
                 move_number += 1
                 stats: AnalysisStats = info.copy()
-                stats.update({
-                    "movenumber": move_number,
-                    "totalmoves": total_moves,
-                    "percentcomplete": move_number / total_moves,
-                })
+                stats.update(
+                    {
+                        "movenumber": move_number,
+                        "totalmoves": total_moves,
+                        "percentcomplete": move_number / total_moves,
+                    }
+                )
                 await update_callback(stats)
 
             game.set_eval(info["score"], info["depth"])
@@ -107,10 +110,7 @@ class PGN:
         """
         if not self.has_analysis():
             raise MissingAnalysisError
-        acpl: Dict[chess.Color, List[int]] = {
-            chess.WHITE: [0, 0],
-            chess.BLACK: [0, 0]
-        }
+        acpl: Dict[chess.Color, List[int]] = {chess.WHITE: [0, 0], chess.BLACK: [0, 0]}
         game = self._game_root
         while True:
             if game.parent is not None:
@@ -125,7 +125,7 @@ class PGN:
             game = game.next()
         return {
             chess.WHITE: int(acpl[chess.WHITE][0] / acpl[chess.WHITE][1] * -1) if acpl[chess.WHITE][1] > 0 else 0,
-            chess.BLACK: int(acpl[chess.BLACK][0] / acpl[chess.BLACK][1] * -1) if acpl[chess.BLACK][1] > 0 else 0
+            chess.BLACK: int(acpl[chess.BLACK][0] / acpl[chess.BLACK][1] * -1) if acpl[chess.BLACK][1] > 0 else 0,
         }
 
     def export(self) -> str:

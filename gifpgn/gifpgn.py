@@ -11,19 +11,14 @@ from PIL import Image
 from .exceptions import MissingAnalysisError
 from ._types import PieceTheme, BoardTheme, BoardThemes
 from .utils import PGN, _eval
-from .components import (
-    _Board,
-    _Graph,
-    _EvalBar,
-    _Headers,
-    _Canvas
-)
+from .components import _Board, _Graph, _EvalBar, _Headers, _Canvas
 
 
 class CreateGifFromPGN:
     """
     :param chess.pgn.Game game: An instance of :class:`chess.pgn.Game` from the python-chess library.
     """
+
     def __init__(self, game: chess.pgn.Game):
         if game is None:
             raise ValueError("Provided game is not valid/empty")
@@ -58,7 +53,7 @@ class CreateGifFromPGN:
 
     @board_size.setter
     def board_size(self, bsize: int):
-        self._board_size = floor(bsize/8)*8
+        self._board_size = floor(bsize / 8) * 8
 
     @property
     def square_colors(self) -> BoardTheme:
@@ -206,9 +201,9 @@ class CreateGifFromPGN:
         if self._graph_size is not None:
             graph = _Graph(
                 self._game_root,
-                (self.board_size+(0 if self._bar_size is None else self._bar_size), self._graph_size),
+                (self.board_size + (0 if self._bar_size is None else self._bar_size), self._graph_size),
                 self.max_eval,
-                line_width=self._graph_line_width
+                line_width=self._graph_line_width,
             )
 
         game = self._game_root
@@ -247,10 +242,7 @@ class CreateGifFromPGN:
             if self._bar_size is not None:
                 frame.add_bar(
                     _EvalBar(
-                        (self._bar_size, self.board_size),
-                        _eval(game).white(),
-                        self.max_eval,
-                        self._reverse
+                        (self._bar_size, self.board_size), _eval(game).white(), self.max_eval, self._reverse
                     ).image()
                 )
 
@@ -282,8 +274,8 @@ class CreateGifFromPGN:
             append_images=frames[1:],
             optimize=True,
             save_all=True,
-            duration=int(self.frame_duration*1000),
-            loop=0
+            duration=int(self.frame_duration * 1000),
+            loop=0,
         )
 
         if output_file is None:

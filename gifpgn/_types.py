@@ -20,6 +20,7 @@ class PieceTheme(Enum):
         gif.piece_theme = PieceTheme.CASES
 
     """
+
     ALPHA = "alpha"
     """Alpha theme by Eric Bentzen, free for personal use."""
     CASES = "cases"
@@ -41,6 +42,7 @@ class BoardTheme:
         gif.square_colors = BoardTheme(white="#ffffff", black="#000000")
 
     """
+
     white: str = "#f0d9b5"
     black: str = "#b58863"
 
@@ -58,6 +60,7 @@ class BoardThemes(Enum):
         gif.square_colors = BoardThemes.BLUE
 
     """
+
     GREEN = ("#ebecd0", "#739552")
     BLUE = ("#eae9d2", "#4b7399")
     BROWN = ("#f0d9b5", "#b58863")
@@ -73,6 +76,7 @@ class AnalysisStats(InfoDict):
     :ivar int total_moves: The total number of moves in the game.
     :ivar float percent_complete: Fraction of the analysis completed (from 0.0 to 1.0).
     """
+
     movenumber: int
     totalmoves: int
     percentcomplete: float

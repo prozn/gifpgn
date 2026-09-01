@@ -27,6 +27,7 @@ def game():
         for _ in range(0, game_num):
             pgn = chess.pgn.read_game(f)
         return CreateGifFromPGN(pgn)
+
     return _game
 
 
@@ -61,11 +62,9 @@ def test_missing_analysis(game, method):
 
 
 @pytest.mark.parametrize(
-        "method, var, val", [
-            ("add_analysis_bar", "_bar_size", 30),
-            ("add_analysis_graph", "_graph_size", 81),
-            ("enable_nags", "_nag", True)
-        ])
+    "method, var, val",
+    [("add_analysis_bar", "_bar_size", 30), ("add_analysis_graph", "_graph_size", 81), ("enable_nags", "_nag", True)],
+)
 def test_has_analysis(game, method, var, val):
     g = game(PGN_EVAL_ANNOTATIONS)
     getattr(g, method)()
@@ -124,6 +123,7 @@ def test_generate_board_only(game):
     with Image.open(gif).convert("RGBA") as frame:
         assert frame.size == (240, 240)
 
+
 def test_generate_board_headers(game):
     g: CreateGifFromPGN = game(PGN_NO_ANNOTATIONS)
     g.board_size = 240
@@ -132,6 +132,7 @@ def test_generate_board_headers(game):
     with Image.open(gif).convert("RGBA") as frame:
         assert frame.size == (240, 290)
         assert frame.getpixel((120, 5)) == (0, 0, 0, 255)
+
 
 def test_generate_board_headers_reversed(game):
     g: CreateGifFromPGN = game(PGN_NO_ANNOTATIONS)
@@ -143,27 +144,30 @@ def test_generate_board_headers_reversed(game):
         assert frame.size == (240, 290)
         assert frame.getpixel((120, 270)) == (0, 0, 0, 255)
 
+
 def test_generate_en_passant(game):
     g: CreateGifFromPGN = game(PGN_NO_ANNOTATIONS, 1)
     g.piece_theme = PieceTheme.CASES
     g.board_size = 240
-    g. add_headers(25)
+    g.add_headers(25)
     gif = g.generate()
     with Image.open(gif) as gif:
         gif.seek(5)
         with gif.convert("RGBA") as frame:
             assert frame.getpixel((43, 277)) == (0, 0, 0, 255)
 
+
 def test_generate_capture(game):
     g: CreateGifFromPGN = game(PGN_NO_ANNOTATIONS, 1)
     g.piece_theme = PieceTheme.CASES
     g.board_size = 240
-    g. add_headers(25)
+    g.add_headers(25)
     gif = g.generate()
     with Image.open(gif) as gif:
         gif.seek(6)
         with gif.convert("RGBA") as frame:
             assert frame.getpixel((43, 18)) == pytest.approx((255, 255, 255, 255), abs=2)  # white pawn should be here
+
 
 def test_generate_check_arrow(game):
     g: CreateGifFromPGN = game(PGN_NO_ANNOTATIONS, 1)
@@ -174,8 +178,9 @@ def test_generate_check_arrow(game):
     with Image.open(gif) as gif:
         gif.seek(7)
         with gif.convert("RGBA") as frame:
-            assert frame.getpixel((88, 61))[0] > 0   # If red here, arrow was drawn
+            assert frame.getpixel((88, 61))[0] > 0  # If red here, arrow was drawn
             assert frame.getpixel((95, 61))[0] == 0  # If arrow correct should be black here
+
 
 def test_generate_eval_graph(game):
     g: CreateGifFromPGN = game(PGN_EVAL_ANNOTATIONS)
@@ -184,6 +189,7 @@ def test_generate_eval_graph(game):
     gif = g.generate()
     with Image.open(gif).convert("RGBA") as frame:
         assert frame.size == (400, 460)
+
 
 def test_generate_nags(game):
     g: CreateGifFromPGN = game(PGN_EVAL_ANNOTATIONS)
@@ -196,6 +202,7 @@ def test_generate_nags(game):
         with gif.convert("RGBA") as frame:
             assert all(frame.getpixel((378, 150)))  # Not black
 
+
 def test_generate_eval_bar(game):
     g: CreateGifFromPGN = game(PGN_EVAL_ANNOTATIONS)
     g.board_size = 240
@@ -203,6 +210,7 @@ def test_generate_eval_bar(game):
     gif = g.generate()
     with Image.open(gif).convert("RGBA") as frame:
         assert frame.size == (260, 240)
+
 
 def test_generate_save_image(game, tmpdir):
     g: CreateGifFromPGN = game(PGN_NO_ANNOTATIONS)
