@@ -1,7 +1,7 @@
 # Build Configuration
 
 [build-system]
-requires = ["setuptools>=42", "wheel"]
+requires = ["setuptools>=77.0.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -12,11 +12,12 @@ keywords = ["chess", "pgn", "uci", "analysis", "stockfish", "gif", "acpl"]
 authors = [
     { name = "Matthew Hambly", email = "gifpgn@quickmind.co.uk" }
 ]
-license = { text = "GPL-3.0-or-later" }
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
 requires-python = ">=3.10"
 dependencies = [
-    "pillow==11.1.0",
-    "chess==1.11.1"
+    "pillow>=12.3.0,<13",
+    "chess==1.11.2"
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -25,11 +26,12 @@ classifiers = [
     "Topic :: Games/Entertainment :: Board Games",
     "Topic :: Games/Entertainment :: Real Time Strategy",
     "Topic :: Software Development :: Libraries :: Python Modules",
-    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12"
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14"
 ]
 
 [project.urls]
@@ -54,7 +56,7 @@ readme = {file = "README.rst", content-type = "text/x-rst"}
 # UV Configuration
 
 [dependency-groups]
-dev = ["pytest", "coverage"]
+dev = ["pytest", "coverage", "ruff"]
 docs = ["sphinx", "sphinx-rtd-theme", "sphinxcontrib-jquery"]
 
 

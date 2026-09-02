@@ -28,7 +28,7 @@ def angle_between_two_points(point1: Coord, point2: Coord) -> float:
     """
     x0, y0 = point1
     x1, y1 = point2
-    return -atan2(y1-y0, x1-x0)
+    return -atan2(y1 - y0, x1 - x0)
 
 
 def shorten_line(c1: Coord, c2: Coord, pix: int) -> Tuple[Coord, Coord]:
@@ -41,13 +41,13 @@ def shorten_line(c1: Coord, c2: Coord, pix: int) -> Tuple[Coord, Coord]:
     """
     dx: float = c2[0] - c1[0]
     dy: float = c2[1] - c1[1]
-    length = sqrt(dx*dx+dy*dy)
+    length = sqrt(dx * dx + dy * dy)
     if length > 0:
         dx /= length
         dy /= length
-    dx *= length-pix
-    dy *= length-pix
-    return (c1, Coord(int(c1[0]+dx), int(c1[1]+dy)))
+    dx *= length - pix
+    dy *= length - pix
+    return (c1, Coord(int(c1[0] + dx), int(c1[1] + dy)))
 
 
 def line_intersection(line1: Tuple[Coord, Coord], line2: Tuple[Coord, Coord]) -> Optional[Coord]:

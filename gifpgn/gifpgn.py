@@ -11,24 +11,21 @@ from PIL import Image
 from .exceptions import MissingAnalysisError
 from ._types import PieceTheme, BoardTheme, BoardThemes
 from .utils import PGN, _eval
-from .components import (
-    _Board,
-    _Graph,
-    _EvalBar,
-    _Headers,
-    _Canvas
-)
+from .components import _Board, _Graph, _EvalBar, _Headers, _Canvas
 
 
 class CreateGifFromPGN:
     """
     :param chess.pgn.Game game: An instance of :class:`chess.pgn.Game` from the python-chess library.
     """
+
     def __init__(self, game: chess.pgn.Game):
         if game is None:
             raise ValueError("Provided game is not valid/empty")
 
-        if game.end().ply() - game.ply() < 1:
+        self._game_root: chess.pgn.Game = game.game()
+
+        if self._game_root.end().ply() - self._game_root.ply() < 1:
             raise ValueError("Provided game does not have any moves.")
 
         self.board_size = 480
@@ -43,7 +40,6 @@ class CreateGifFromPGN:
         self._bar_size: Optional[int] = None
         self._graph_size: Optional[int] = None
         self._header_size: Optional[int] = None
-        self._game_root: chess.pgn.Game = game
         self._start_color: chess.Color = self._game_root.turn()
 
     @property
@@ -57,7 +53,7 @@ class CreateGifFromPGN:
 
     @board_size.setter
     def board_size(self, bsize: int):
-        self._board_size = floor(bsize/8)*8
+        self._board_size = floor(bsize / 8) * 8
 
     @property
     def square_colors(self) -> BoardTheme:
@@ -205,9 +201,9 @@ class CreateGifFromPGN:
         if self._graph_size is not None:
             graph = _Graph(
                 self._game_root,
-                (self.board_size+(0 if self._bar_size is None else self._bar_size), self._graph_size),
+                (self.board_size + (0 if self._bar_size is None else self._bar_size), self._graph_size),
                 self.max_eval,
-                line_width=self._graph_line_width
+                line_width=self._graph_line_width,
             )
 
         game = self._game_root
@@ -216,20 +212,23 @@ class CreateGifFromPGN:
             frame = _Canvas(self.board_size, self._bar_size, self._graph_size, self._header_size, self._reverse)
             board_img = _Board(self.board_size, board, self._reverse, self.square_colors, self.piece_theme)
 
-            if game.move is not None and game.parent.board().is_capture(game.move):
-                if game.parent.board().is_en_passant(game.move):
+            parent = game.parent
+            if game.move is not None and parent is not None and parent.board().is_capture(game.move):
+                if parent.board().is_en_passant(game.move):
                     captures.append(chess.Piece(chess.PAWN, board.turn))
                 else:
-                    captures.append(game.parent.board().piece_at(game.move.to_square))
+                    captured_piece = parent.board().piece_at(game.move.to_square)
+                    if captured_piece is not None:
+                        captures.append(captured_piece)
 
             if self._arrows and game.move is not None:
                 board_img.draw_arrow(game.move.from_square, game.move.to_square, "blue")
-                if board.is_check():
+                if board.is_check() and (king_square := board.king(board.turn)):
                     for sq in board.checkers():
-                        board_img.draw_arrow(sq, board.king(board.turn), "red")
+                        board_img.draw_arrow(sq, king_square, "red")
 
-            if self._nag and game.move is not None:
-                prev = _eval(game.parent).relative.wdl(model="sf", ply=game.parent.ply())
+            if self._nag and game.move is not None and parent is not None:
+                prev = _eval(parent).relative.wdl(model="sf", ply=parent.ply())
                 curr = _eval(game).pov(not _eval(game).turn).wdl(model="sf", ply=game.ply())
                 change = curr.expectation() - prev.expectation()
                 nag = None
@@ -246,10 +245,7 @@ class CreateGifFromPGN:
             if self._bar_size is not None:
                 frame.add_bar(
                     _EvalBar(
-                        (self._bar_size, self.board_size),
-                        _eval(game).white(),
-                        self.max_eval,
-                        self._reverse
+                        (self._bar_size, self.board_size), _eval(game).white(), self.max_eval, self._reverse
                     ).image()
                 )
 
@@ -262,9 +258,9 @@ class CreateGifFromPGN:
 
             frames.append(frame.image())
 
-            if game.next() is None:
-                break
             game = game.next()
+            if game is None:
+                break
 
         last_frame = frames[-1].copy()
         for _ in range(20):
@@ -281,10 +277,11 @@ class CreateGifFromPGN:
             append_images=frames[1:],
             optimize=True,
             save_all=True,
-            duration=int(self.frame_duration*1000),
-            loop=0
+            duration=int(self.frame_duration * 1000),
+            loop=0,
         )
 
         if output_file is None:
+            assert isinstance(target, BytesIO)
             target.seek(0)
             return target
