@@ -1,7 +1,7 @@
 # Build Configuration
 
 [build-system]
-requires = ["setuptools>=42", "wheel"]
+requires = ["setuptools>=77.0.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -12,7 +12,8 @@ keywords = ["chess", "pgn", "uci", "analysis", "stockfish", "gif", "acpl"]
 authors = [
     { name = "Matthew Hambly", email = "gifpgn@quickmind.co.uk" }
 ]
-license = { text = "GPL-3.0-or-later" }
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
 requires-python = ">=3.10"
 dependencies = [
     "pillow>=12.3.0,<13",
@@ -25,7 +26,6 @@ classifiers = [
     "Topic :: Games/Entertainment :: Board Games",
     "Topic :: Games/Entertainment :: Real Time Strategy",
     "Topic :: Software Development :: Libraries :: Python Modules",
-    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
