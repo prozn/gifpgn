@@ -212,20 +212,23 @@ class CreateGifFromPGN:
             frame = _Canvas(self.board_size, self._bar_size, self._graph_size, self._header_size, self._reverse)
             board_img = _Board(self.board_size, board, self._reverse, self.square_colors, self.piece_theme)
 
-            if game.move is not None and game.parent.board().is_capture(game.move):
-                if game.parent.board().is_en_passant(game.move):
+            parent = game.parent
+            if game.move is not None and parent is not None and parent.board().is_capture(game.move):
+                if parent.board().is_en_passant(game.move):
                     captures.append(chess.Piece(chess.PAWN, board.turn))
                 else:
-                    captures.append(game.parent.board().piece_at(game.move.to_square))
+                    captured_piece = parent.board().piece_at(game.move.to_square)
+                    if captured_piece is not None:
+                        captures.append(captured_piece)
 
             if self._arrows and game.move is not None:
                 board_img.draw_arrow(game.move.from_square, game.move.to_square, "blue")
-                if board.is_check():
+                if board.is_check() and (king_square := board.king(board.turn)):
                     for sq in board.checkers():
-                        board_img.draw_arrow(sq, board.king(board.turn), "red")
+                        board_img.draw_arrow(sq, king_square, "red")
 
-            if self._nag and game.move is not None:
-                prev = _eval(game.parent).relative.wdl(model="sf", ply=game.parent.ply())
+            if self._nag and game.move is not None and parent is not None:
+                prev = _eval(parent).relative.wdl(model="sf", ply=parent.ply())
                 curr = _eval(game).pov(not _eval(game).turn).wdl(model="sf", ply=game.ply())
                 change = curr.expectation() - prev.expectation()
                 nag = None
@@ -255,9 +258,9 @@ class CreateGifFromPGN:
 
             frames.append(frame.image())
 
-            if game.next() is None:
-                break
             game = game.next()
+            if game is None:
+                break
 
         last_frame = frames[-1].copy()
         for _ in range(20):
@@ -279,5 +282,6 @@ class CreateGifFromPGN:
         )
 
         if output_file is None:
+            assert isinstance(target, BytesIO)
             target.seek(0)
             return target

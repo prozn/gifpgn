@@ -301,7 +301,7 @@ class _Board(_Component):
 
 
 class _Headers:
-    def __init__(self, game: chess.pgn.Game, captures: List[chess.Piece], size: Tuple[int, int]):
+    def __init__(self, game: chess.pgn.GameNode, captures: List[chess.Piece], size: Tuple[int, int]):
         """Draw headers and populate with player name, captured pieces, and clock if available
 
         :param chess.pgn.Game game: Game object containing player name headers
@@ -318,18 +318,28 @@ class _Headers:
             BytesIO(files("gifpgn.fonts").joinpath("Carlito-Regular.ttf").read_bytes()), int(self._height * 0.7)
         )
 
+        previous_clock: float | None = None
+        if self._game.move is not None:
+            parent = self._game.parent
+            if parent is None:
+                previous_clock = None
+            else:
+                previous_clock = parent.clock()
+
         clock = {
             not self._game.turn(): self._game.clock(),
-            self._game.turn(): None if self._game.move is None else self._game.parent.clock(),
+            self._game.turn(): previous_clock,
         }
 
         whitebar = Image.new("RGBA", (self._width, self._height), "white")
         draw = ImageDraw.Draw(whitebar)
         draw.text((3, self._height / 2), self._game_root.headers["White"], font=font, fill="black", anchor="lm")
-        if clock[chess.WHITE] is not None:
+
+        white_clock = clock[chess.WHITE]
+        if white_clock is not None:
             draw.text(
                 (self._width - 3, self._height / 2),
-                str(timedelta(seconds=round(clock[chess.WHITE]))),
+                str(timedelta(seconds=round(white_clock))),
                 font=font,
                 fill="black",
                 anchor="rm",
@@ -338,10 +348,12 @@ class _Headers:
         blackbar = Image.new("RGBA", (self._width, self._height), "black")
         draw = ImageDraw.Draw(blackbar)
         draw.text((3, self._height / 2), self._game_root.headers["Black"], font=font, fill="white", anchor="lm")
-        if clock[chess.BLACK] is not None:
+
+        black_clock = clock[chess.BLACK]
+        if black_clock is not None:
             draw.text(
                 (self._width - 3, self._height / 2),
-                str(timedelta(seconds=round(clock[chess.BLACK]))),
+                str(timedelta(seconds=round(black_clock))),
                 font=font,
                 fill="white",
                 anchor="rm",
@@ -430,7 +442,7 @@ class _EvalBar(_Component):
         :return int:
         """
         max_eval = self._max_eval
-        bounded_eval = evalu.score(mate_score=max_eval) + (0 if evalu.mate() is None else evalu.mate())
+        bounded_eval = evalu.score(mate_score=max_eval) + (evalu.mate() or 0)
         if abs(bounded_eval) > max_eval:
             bounded_eval = max_eval if bounded_eval >= 0 else -max_eval
         y = ((bounded_eval / max_eval) + 1) * (self._height / 2)
@@ -440,12 +452,15 @@ class _EvalBar(_Component):
 
     def _get_bar_text(self, evalu: chess.engine.Score) -> Dict:
         eval_string: Dict = {"text": "", "color": "", "pos": None, "anchor": ""}
-        if evalu.mate() is None:
-            eval_string["text"] = "{0:+.{1}f}".format(round(float(evalu.score()) / 100, 1), 1)
-        else:
-            eval_string["text"] = f"M{abs(evalu.mate())}"
 
-        if evalu.score(mate_score=self._max_eval) > 0:
+        mate = evalu.mate()
+        score = evalu.score(mate_score=self._max_eval)
+        if mate is None:
+            eval_string["text"] = "?" if score is None else f"{score / 100:+.1f}"
+        else:
+            eval_string["text"] = f"M{abs(mate)}"
+
+        if score > 0:
             eval_string["color"] = "black"
             eval_string["pos"] = 0 if self._reverse else self._height
             eval_string["anchor"] = "ma" if self._reverse else "md"
@@ -486,6 +501,7 @@ class _Graph:
         points = {}
         graph_image = Image.new("RGBA", (self._width, self._height), "black")
         draw = ImageDraw.Draw(graph_image)
+
         game = self._game_root
         while True:
             move_num = game.ply()
@@ -493,6 +509,7 @@ class _Graph:
             self._eval_at_move[move_num] = _eval(game).white()
             prev_evalu = 0 if game.parent is None else _eval(game.parent).white().score(mate_score=self._max_eval)
             points[move_num] = self._get_graph_position(_eval(game).white(), move_num)
+
             if game.parent is not None:
                 zprev = self._get_graph_position(chess.engine.Cp(0), move_num - 1)
                 znew = self._get_graph_position(chess.engine.Cp(0), move_num)
@@ -506,9 +523,14 @@ class _Graph:
                     else:
                         fill_color = "#514f4c" if evalu < 0 else "#7f7e7c"
                     draw.polygon([zprev, points[move_num - 1], points[move_num], znew], fill=fill_color)
+
             if game.is_end():
                 break
+
             game = game.next()
+            if game is None:
+                break
+
         points_list = [point for _, point in sorted(points.items())]
         draw.line(points_list, fill="white", width=self._line_width)
         x_axis_f = self._get_graph_position(chess.engine.Cp(0), 0)
@@ -523,7 +545,7 @@ class _Graph:
         :param int move:
         :return Coord: Coordinates on the evaluation graph
         """
-        bounded_eval = evalu.score(mate_score=self._max_eval) + (0 if evalu.mate() is None else evalu.mate())
+        bounded_eval = evalu.score(mate_score=self._max_eval) + (evalu.mate() or 0)
         if abs(bounded_eval) > self._max_eval:
             bounded_eval = self._max_eval if bounded_eval >= 0 else -self._max_eval
         x = (self._width / (self._game_root.end().ply() - self._game_root.ply())) * move

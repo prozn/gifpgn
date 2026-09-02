@@ -1,11 +1,12 @@
 import pytest
+from typing import Callable
 
 from gifpgn.components import _Canvas, _AssetImage, _Piece, _Board, _Headers, _EvalBar, _Graph
 from gifpgn._types import Coord, PieceTheme, BoardTheme
 
 import chess
 import chess.pgn
-from chess.engine import Cp, Mate, PovScore
+from chess.engine import Cp, Mate, PovScore, Score
 from PIL import Image
 
 from gifpgn.exceptions import MoveOutOfRangeError
@@ -101,15 +102,20 @@ def test_asset_image_cache():
 
 
 @pytest.fixture()
-def chess_board():
+def chess_board() -> Callable[[str], chess.Board]:
     def _chess_board(pgn: str) -> chess.Board:
-        return chess.pgn.read_game(open(f"tests/test_data/{pgn}")).board()
+        game = chess.pgn.read_game(open(f"tests/test_data/{pgn}"))
+
+        if game is None:
+            raise ValueError
+        
+        return game.board()
 
     return _chess_board
 
 
 @pytest.fixture()
-def board(chess_board: chess.Board) -> _Board:
+def board(chess_board: Callable[[str], chess.Board]) -> _Board:
     return _Board(480, chess_board(PGN_NO_ANNOTATIONS), False, BoardTheme(white="#ff0000", black="#00ff00"))
 
 
@@ -133,7 +139,7 @@ def test_setting_square_color(chess_board):
 
 def test_square_color_error(chess_board):
     with pytest.raises(ValueError):
-        _Board(480, chess_board(PGN_NO_ANNOTATIONS), square_colors="#ff0000")
+        _Board(480, chess_board(PGN_NO_ANNOTATIONS), square_colors="#ff0000")   # ty: ignore[invalid-argument-type]
 
 
 def test_board_size(board: _Board):
@@ -188,13 +194,18 @@ def test_draw_arrow(board: _Board):
     board.square_colors = BoardTheme(white="#000000", black="#000000")
     board.draw_board()
     board.draw_arrow(chess.A1, chess.H8, "red")
-    assert board._canvas.getpixel((120, 120))[0] > 0
-    assert board._canvas.getpixel((120, 120))[1] == 0
+    pixel = board._canvas.getpixel((120, 120))
+    assert isinstance(pixel, tuple)
+    assert pixel[0] > 0
+    assert pixel[1] == 0
 
     board.draw_arrow(chess.A6, chess.B5, "blue")
     assert board._canvas.getpixel((0, 0)) == (0, 0, 0, 255)
-    assert board._canvas.getpixel((30, 90))[2] > 0
-    assert board._canvas.getpixel((30, 90))[0] == 0
+
+    pixel = board._canvas.getpixel((30, 90))
+    assert isinstance(pixel, tuple)
+    assert pixel[2] > 0
+    assert pixel[0] == 0
 
 
 def test_draw_nag(board: _Board):
@@ -209,22 +220,35 @@ def test_draw_nag(board: _Board):
 
 
 @pytest.fixture()
-def chess_game():
-    def _chess_game(pgn: str) -> chess.Board:
-        return chess.pgn.read_game(open(f"tests/test_data/{pgn}"))
+def chess_game() -> Callable[[str], chess.pgn.Game]:
+    def _chess_game(pgn: str) -> chess.pgn.Game:
+        game = chess.pgn.read_game(open(f"tests/test_data/{pgn}"))
+        if game is None:
+            raise ValueError
+        
+        return game
 
     return _chess_game
 
 
 @pytest.fixture()
-def headers(chess_game: chess.pgn.Game) -> _Board:
+def headers(chess_game: Callable[[str], chess.pgn.Game]) -> _Headers:
     captures = [
         chess.Piece(chess.PAWN, chess.WHITE),
         chess.Piece(chess.PAWN, chess.BLACK),
         chess.Piece(chess.ROOK, chess.WHITE),
         chess.Piece(chess.ROOK, chess.BLACK),
     ]
-    return _Headers(chess_game(PGN_CLOCK_ANNOTATIONS).next().next(), captures, (400, 40))
+
+    game = chess_game(PGN_CLOCK_ANNOTATIONS)
+
+    for _ in range(2):
+        next_node = game.next()
+        if next_node is None:
+            raise ValueError("Expected the PGN to contain two moves")
+        game = next_node
+
+    return _Headers(game, captures, (400, 40))
 
 
 def test_draw_headers_size(headers: _Headers):
@@ -314,11 +338,16 @@ def test_draw_eval_bar(score, reverse, expected):
 
 
 @pytest.fixture()
-def chess_game_graph():
-    def _chess_game() -> chess.Board:
+def chess_game_graph() -> chess.pgn.Game:
+    def _chess_game() -> chess.pgn.Game:
         with open(f"tests/test_data/{PGN_EVAL_ANNOTATIONS}") as pgn:
             chess.pgn.read_game(pgn)  # skip to second game
-            return chess.pgn.read_game(pgn)
+            game = chess.pgn.read_game(pgn)
+        
+        if game is None:
+            raise ValueError
+
+        return game
 
     return _chess_game()
 
@@ -338,18 +367,18 @@ def chess_game_graph():
         (PovScore(Mate(0), chess.BLACK).white(), 17, Coord(400, 0)),
     ],
 )
-def test_get_graph_position(chess_game_graph, eval, move, expected):
+def test_get_graph_position(chess_game_graph: chess.pgn.Game, eval: Score, move: int, expected: Coord):
     graph = _Graph(chess_game_graph, (100, 25), 1000, 1)
     assert graph._get_graph_position(eval, move) == expected
 
 
 @pytest.mark.parametrize("move_num, coord", [(5, (176, 99)), (9, (317, 149)), (17, (599, 69))])
-def test_at_move(chess_game_graph, move_num, coord):
+def test_at_move(chess_game_graph: chess.pgn.Game, move_num: int, coord: Coord):
     graph = _Graph(chess_game_graph, (600, 200), 1000, 1)
     assert graph.at_move(move_num).getpixel(coord) == (255, 0, 0, 255)
 
 
-def test_at_move_error(chess_game_graph):
+def test_at_move_error(chess_game_graph: chess.pgn.Game):
     graph = _Graph(chess_game_graph, (600, 200), 1000, 1)
     with pytest.raises(MoveOutOfRangeError):
         graph.at_move(18)

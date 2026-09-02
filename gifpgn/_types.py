@@ -72,9 +72,9 @@ class BoardThemes(Enum):
 class AnalysisStats(InfoDict):
     """A dictionary of engine information from (`chess.engine.InfoDict`) extended with the following keys
 
-    :ivar int move_number: The index of the move currently being analyzed.
-    :ivar int total_moves: The total number of moves in the game.
-    :ivar float percent_complete: Fraction of the analysis completed (from 0.0 to 1.0).
+    :ivar int movenumber: The index of the move currently being analyzed.
+    :ivar int totalmoves: The total number of moves in the game.
+    :ivar float percentcomplete: Fraction of the analysis completed (from 0.0 to 1.0).
     """
 
     movenumber: int

@@ -37,9 +37,10 @@ class PGN:
                 if game.board().is_checkmate():
                     return True
                 return False
-            if game.next() is None:
-                break
             game = game.next()
+            if game is None:
+                break
+            
         return True
 
     def add_analysis(self, engine: chess.engine.SimpleEngine, engine_limit: chess.engine.Limit) -> chess.pgn.Game:
@@ -55,10 +56,11 @@ class PGN:
         while True:
             info = engine.analyse(game.board(), engine_limit)
             game.set_eval(info["score"], info["depth"])
-            if game.next() is None:
-                break
             game = game.next()
-        return game.game()
+            if game is None:
+                break
+            
+        return self._game_root
 
     async def add_analysis_async(
         self,
@@ -84,22 +86,21 @@ class PGN:
 
             if update_callback:
                 move_number += 1
-                stats: AnalysisStats = info.copy()
-                stats.update(
-                    {
-                        "movenumber": move_number,
-                        "totalmoves": total_moves,
-                        "percentcomplete": move_number / total_moves,
-                    }
-                )
+                stats: AnalysisStats = {
+                    **info,
+                    "movenumber": move_number,
+                    "totalmoves": total_moves,
+                    "percentcomplete": move_number / total_moves,
+                }
                 await update_callback(stats)
 
             game.set_eval(info["score"], info["depth"])
 
-            if game.next() is None:
-                break
             game = game.next()
-        return game.game()
+            if game is None:
+                break
+            
+        return self._game_root
 
     def acpl(self, max_eval: int = 1000) -> Dict[chess.Color, int]:
         """Calculate the average centipawn loss for each player.
@@ -120,9 +121,11 @@ class PGN:
                 prev_eval = min(max_eval * (-1 if prev_eval < 0 else 1), prev_eval, key=abs)
                 acpl[not game.turn()][0] += curr_eval - prev_eval
                 acpl[not game.turn()][1] += 1
-            if game.next() is None:
-                break
+
             game = game.next()
+            if game is None:
+                break
+
         return {
             chess.WHITE: int(acpl[chess.WHITE][0] / acpl[chess.WHITE][1] * -1) if acpl[chess.WHITE][1] > 0 else 0,
             chess.BLACK: int(acpl[chess.BLACK][0] / acpl[chess.BLACK][1] * -1) if acpl[chess.BLACK][1] > 0 else 0,
@@ -139,20 +142,22 @@ class PGN:
         return self.export()
 
 
-def _eval(game: chess.pgn.Game) -> chess.engine.PovScore:
+def _eval(game: chess.pgn.GameNode) -> chess.engine.PovScore:
     """Patch ``chess.pgn.Game.eval()``, which does not return a valid ``chess.engine.PovScore`` if
     the position is mate.
 
-    :param chess.pgn.Game game: _description_
-    :raises MissingAnalysisError: _description_
-    :return _type_: _description_
+    :param chess.pgn.GameNode game: Game node to evaluate
+    :raises MissingAnalysisError: Raised if the game node has no analysis
+    :return chess.engine.PovScore: Evaluation of the game node
     """
-    if game.eval() is None:
-        if game.board().is_checkmate():
-            return chess.engine.PovScore(chess.engine.Mate(0), game.turn())
-        else:
-            raise MissingAnalysisError
-    return game.eval()
+    eval = game.eval()
+    if eval is not None:
+        return eval
+
+    if game.board().is_checkmate():
+        return chess.engine.PovScore(chess.engine.Mate(0), game.turn())
+    else:
+        raise MissingAnalysisError
 
 
 def _font_size_approx(text: str, font_file: bytes, target_width: int, target_ratio: float, min_size: int) -> int:
