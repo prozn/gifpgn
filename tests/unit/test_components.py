@@ -108,7 +108,7 @@ def chess_board() -> Callable[[str], chess.Board]:
 
         if game is None:
             raise ValueError
-        
+
         return game.board()
 
     return _chess_board
@@ -139,7 +139,7 @@ def test_setting_square_color(chess_board):
 
 def test_square_color_error(chess_board):
     with pytest.raises(ValueError):
-        _Board(480, chess_board(PGN_NO_ANNOTATIONS), square_colors="#ff0000")   # ty: ignore[invalid-argument-type]
+        _Board(480, chess_board(PGN_NO_ANNOTATIONS), square_colors="#ff0000")  # ty: ignore[invalid-argument-type]
 
 
 def test_board_size(board: _Board):
@@ -225,7 +225,7 @@ def chess_game() -> Callable[[str], chess.pgn.Game]:
         game = chess.pgn.read_game(open(f"tests/test_data/{pgn}"))
         if game is None:
             raise ValueError
-        
+
         return game
 
     return _chess_game
@@ -343,7 +343,7 @@ def chess_game_graph() -> chess.pgn.Game:
         with open(f"tests/test_data/{PGN_EVAL_ANNOTATIONS}") as pgn:
             chess.pgn.read_game(pgn)  # skip to second game
             game = chess.pgn.read_game(pgn)
-        
+
         if game is None:
             raise ValueError
 

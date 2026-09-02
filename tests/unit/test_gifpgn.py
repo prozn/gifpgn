@@ -23,8 +23,8 @@ PGN_EMPTY = "test_empty.pgn"
 
 
 class GameFactory(Protocol):
-    def __call__(self, pgn: str, game_num: int = 0) -> CreateGifFromPGN:
-        ...
+    def __call__(self, pgn: str, game_num: int = 0) -> CreateGifFromPGN: ...
+
 
 @pytest.fixture()
 def game() -> GameFactory:
@@ -34,7 +34,7 @@ def game() -> GameFactory:
         for _ in range(0, game_num):
             pgn = chess.pgn.read_game(f)
 
-        return CreateGifFromPGN(pgn)  #ty: ignore[invalid-argument-type]
+        return CreateGifFromPGN(pgn)  # ty: ignore[invalid-argument-type]
 
     return _game
 

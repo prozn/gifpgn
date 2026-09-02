@@ -40,7 +40,7 @@ class PGN:
             game = game.next()
             if game is None:
                 break
-            
+
         return True
 
     def add_analysis(self, engine: chess.engine.SimpleEngine, engine_limit: chess.engine.Limit) -> chess.pgn.Game:
@@ -59,7 +59,7 @@ class PGN:
             game = game.next()
             if game is None:
                 break
-            
+
         return self._game_root
 
     async def add_analysis_async(
@@ -99,7 +99,7 @@ class PGN:
             game = game.next()
             if game is None:
                 break
-            
+
         return self._game_root
 
     def acpl(self, max_eval: int = 1000) -> Dict[chess.Color, int]:
