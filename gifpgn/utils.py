@@ -47,7 +47,8 @@ class PGN:
         """Calculates and adds ``[%eval ...]`` annotations to each half move in the PGN
 
         :param chess.engine.SimpleEngine engine: Instance of
-            `chess.engine.SimpleEngine <https://python-chess.readthedocs.io/en/latest/engine.html>`_ from python-chess
+            `chess.engine.SimpleEngine <https://python-chess.readthedocs.io/en/latest/engine.html#chess.engine.SimpleEngine>`_ 
+            from python-chess
         :param chess.engine.Limit engine_limit: Instance of
             `chess.engine.Limit <https://python-chess.readthedocs.io/en/latest/engine.html#chess.engine.Limit>`_
             from python-chess
@@ -70,8 +71,8 @@ class PGN:
     ) -> chess.pgn.Game:
         """Asynchronously calculates and adds ``[%eval ...]`` annotations to each half move in the PGN
 
-        :param chess.engine.SimpleEngine engine: Instance of
-            `chess.engine.SimpleEngine <https://python-chess.readthedocs.io/en/latest/engine.html>`_ from python-chess
+        :param chess.engine.Protocol engine: Instance of
+            `chess.engine.Protocol <https://python-chess.readthedocs.io/en/latest/engine.html#id7>`_ from python-chess
         :param chess.engine.Limit engine_limit: Instance of
             `chess.engine.Limit <https://python-chess.readthedocs.io/en/latest/engine.html#chess.engine.Limit>`_
             from python-chess
