@@ -47,6 +47,7 @@ jobs:
   publish-to-testpypi:
     name: Publish to TestPyPI
     needs: build
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
 
     environment:
@@ -73,10 +74,12 @@ jobs:
 
   publish-to-pypi:
     name: Publish to PyPI
-    needs: publish-to-testpypi
+    needs: [build, publish-to-testpypi]
     if: >
-      github.event_name == 'release' ||
-      inputs.publish-to-pypi == true
+      always() &&
+      needs.build.result == 'success' &&
+      (needs.publish-to-testpypi.result == 'success' || needs.publish-to-testpypi.result == 'skipped') &&
+      (github.event_name == 'release' || inputs.publish-to-pypi == true)
     runs-on: ubuntu-latest
 
     environment:

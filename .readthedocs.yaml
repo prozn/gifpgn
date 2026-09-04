@@ -8,8 +8,8 @@ build:
 python:
   install:
     - method: uv
-    - command: sync
-    - groups:
+      command: sync
+      groups:
       - docs
 
 
