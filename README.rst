@@ -82,7 +82,7 @@ Small GIF with no analysis
 
     import chess.pgn
     import io
-    from from gifpgn import CreateGifFromPGN, PieceTheme, BoardThemes
+    from gifpgn import CreateGifFromPGN, PieceTheme, BoardThemes
 
     pgn_string = ...
     game = chess.pgn.read_game(io.StringIO(pgn_string))
